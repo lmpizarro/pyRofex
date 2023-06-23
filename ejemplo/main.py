@@ -1,13 +1,23 @@
 from datetime import datetime
-from instruments import Ticker
+from instruments import Ticker, dlr_ene_24
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
+import pyRofex
+from decouple import config
+
+
+# 1-Initialize the environment
+pyRofex.initialize(user=config('NAME'),
+                   password=config('PASS'),
+                   account=config('ACCOUNT'),
+                   environment=pyRofex.Environment.REMARKET)
+
 
 
 local_config = Config()
 
-def main():
+def test():
     ticker =Ticker(name="AAPL", cash_asigned=10_000)
     order = Order(ticker=ticker, contract=ContractType.STOCK,
                   side=Side.BUY, limit=OrderType.MARKET, size=10)
@@ -27,6 +37,15 @@ def main():
     print(order)
 
     print(order.json)
+
+def main():
+
+    entries = [pyRofex.MarketDataEntry.BIDS, pyRofex.MarketDataEntry.OFFERS, pyRofex.MarketDataEntry.LAST]
+    market_data = pyRofex.get_market_data(ticker=dlr_ene_24.name, entries=entries, depth=2)
+
+    print("Market Data Response for {0}: {1}".format(dlr_ene_24.name, market_data['marketData']))
+
+
 
 
 if __name__ == "__main__":
