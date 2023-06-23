@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 class ContractType(str, Enum):
     OPTION = 'OPTION'
     STOCK = 'STOCK'
@@ -14,4 +15,3 @@ class Side(str, Enum):
 class OrderType(str, Enum):
     LIMIT = 'LIMIT'
     MARKET = 'MARKET'
-

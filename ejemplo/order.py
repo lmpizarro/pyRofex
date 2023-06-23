@@ -5,7 +5,6 @@ from enums import ContractType, Side, OrderType
 from instruments import Ticker
 
 
-
 @dataclass(frozen=True)
 class Order:
     ticker: Ticker
@@ -25,7 +24,8 @@ class Order:
             raise ValueError('Price must be GT zero')
 
         if self.limit == OrderType.LIMIT and self.price == 0:
-            raise ValueError(f'For {OrderType.LIMIT} order price must be not zero')
+            raise ValueError(
+                f'For {OrderType.LIMIT} order price must be not zero')
 
         if self.date_time and not isinstance(self.date_time, str):
             raise TypeError("date_time must be string")
@@ -73,6 +73,7 @@ class CreateOrder:
 
 def main():
     ...
+
 
 if __name__ == '__main__':
     main()
