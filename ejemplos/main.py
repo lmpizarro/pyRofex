@@ -2,7 +2,10 @@ from datetime import datetime
 from instruments import Ticker
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
-from config import project_tz
+from config import Config
+
+
+local_config = Config()
 
 def main():
     ticker =Ticker(name="AAPL", cash_asigned=10_000)
@@ -10,7 +13,7 @@ def main():
                   side=Side.BUY, limit=OrderType.MARKET, size=10)
 
     print(order)
-    iso_datetime = str(datetime.now(tz=project_tz).isoformat()).split('.')[0]
+    iso_datetime = str(datetime.now(tz=local_config.project_tz).isoformat()).split('.')[0]
     ticker = Ticker(name='TSLA', cash_asigned=10_0000)
     CreateOrder.buy_stock_limit(
         symbol=ticker, units=10, price=100, date_time=iso_datetime)
