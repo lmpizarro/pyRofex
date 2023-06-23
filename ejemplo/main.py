@@ -43,7 +43,9 @@ def main():
     entries = [pyRofex.MarketDataEntry.BIDS, pyRofex.MarketDataEntry.OFFERS, pyRofex.MarketDataEntry.LAST]
     market_data = pyRofex.get_market_data(ticker=dlr_ene_24.name, entries=entries, depth=2)
 
-    print("Market Data Response for {0}: {1}".format(dlr_ene_24.name, market_data['marketData']))
+    print("LAST Data Response for {0}: ".format( market_data['marketData']['LA']))
+    print("BID {0}: ".format( market_data['marketData']['BI']))
+    print("OFFER {0}: ".format(market_data['marketData']['OF']))
 
 
 
