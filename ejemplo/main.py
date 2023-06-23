@@ -1,10 +1,10 @@
 from datetime import datetime
+from decouple import config
+import pyRofex
 from instruments import Ticker, ticker_to_operate, ticker_entries
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
-import pyRofex
-from decouple import config
 
 
 # 1-Initialize the environment
