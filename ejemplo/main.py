@@ -46,7 +46,7 @@ def main():
     market_data = rfx.fetch_market_data()
     print(market_data)
 
-    history = rfx.fetch_historic()
+    history = rfx.fetch_history()
 
     print(history)
 
