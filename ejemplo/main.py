@@ -44,11 +44,13 @@ def test():
 def main():
     rfx = Rofex(tickers=[ggal_ago_23], entries=ticker_entries)
     market_data = rfx.fetch_market_data()
-    print(market_data)
-
+    print(market_data[ggal_ago_23])
+    
     history = rfx.fetch_history()
+    for event in history[ggal_ago_23]:
+        print(event)
 
-    print(history)
+
 
 
 if __name__ == "__main__":
