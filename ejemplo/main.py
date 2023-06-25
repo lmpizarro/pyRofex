@@ -2,7 +2,7 @@ from datetime import datetime
 from decouple import config
 import pyRofex
 from instruments import Ticker
-from rofex import ticker_to_operate, ticker_entries, Rofex, dlr_ene_24, ggal_ago_23
+from rofex import ticker_entries, Rofex, dlr_ene_24, ggal_ago_23
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
@@ -43,8 +43,12 @@ def test():
 
 def main():
     rfx = Rofex(tickers=[ggal_ago_23], entries=ticker_entries)
-    market_data = rfx.market_data()
+    market_data = rfx.fetch_market_data()
     print(market_data)
+
+    history = rfx.fetch_historic()
+
+    print(history)
 
 
 if __name__ == "__main__":
