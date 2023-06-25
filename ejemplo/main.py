@@ -6,6 +6,7 @@ from rofex import ticker_entries, Rofex, dlr_ene_24, ggal_ago_23
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
+import pandas as pd
 
 
 # 1-Initialize the environment
@@ -45,11 +46,12 @@ def main():
     rfx = Rofex(tickers=[ggal_ago_23], entries=ticker_entries)
     market_data = rfx.fetch_market_data()
     print(market_data[ggal_ago_23])
-    
-    history = rfx.fetch_history()
-    for event in history[ggal_ago_23]:
-        print(event)
 
+    history = rfx.fetch_history()
+
+    df = pd.DataFrame.from_records(history[ggal_ago_23])
+
+    print(df.shape)
 
 
 
