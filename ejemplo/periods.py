@@ -8,7 +8,7 @@ def by_days(days=5):
     dates = []
     n = 0
     m = 0
-    while n < 5:
+    while n < days:
         current_date = end - timedelta(days=m)
         if current_date.isoweekday() in [1, 2, 3, 4, 5]:
             n += 1

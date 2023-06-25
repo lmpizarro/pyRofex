@@ -47,11 +47,11 @@ def main():
     market_data = rfx.fetch_market_data()
     print(market_data[ggal_ago_23])
 
-    history = rfx.fetch_history()
+    history = rfx.fetch_history(days=40)
 
     df = pd.DataFrame.from_records(history[ggal_ago_23])
 
-    print(df.shape)
+    print(df)
 
 
 
