@@ -4,6 +4,8 @@ from instruments import Ticker
 from dataclasses import dataclass, field
 from typing import Any
 from periods import by_days
+import pandas as pd
+import numpy as np
 
 
 dlr_ene_24 = Ticker(name='DLR/ENE24', cash_asigned=10_000)
@@ -40,3 +42,20 @@ class Rofex:
             if historic_trades['status'] == 'OK':
                 history[ticker] = historic_trades['trades']
         return history
+
+    @staticmethod
+    def hist_agg(history:dict, ticker: Ticker) -> pd.DataFrame:
+        df = pd.DataFrame.from_records(history[ggal_ago_23])
+
+        print(df.iloc[-1].price, df.price.mean(), df.price.min(), df.price.max())
+
+        df['date'] = pd.to_datetime(df['datetime']).dt.date
+        gr = df.groupby(['date'])
+        result = gr.agg(Low=('price', np.min), High=('price', np.max),
+                        Mean=('price', np.mean), Vol=('size', np.sum))
+        result['Open'] = gr.price.first()
+        result['Close'] = gr.price.last()
+        return result
+
+
+
