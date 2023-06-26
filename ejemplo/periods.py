@@ -1,19 +1,18 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from dataclasses import dataclass
 from config import Config
 
 
-def by_days(days=5):
-    end = datetime.now().date()
+def by_days(days=5, end: date=datetime.now().date()):
     dates = []
-    n = 0
-    m = 0
-    while n < days:
-        current_date = end - timedelta(days=m)
+    delta_dates = 0
+    count_dates = 0
+    while delta_dates < days:
+        current_date = end - timedelta(days=count_dates)
         if current_date.isoweekday() in [1, 2, 3, 4, 5]:
-            n += 1
+            delta_dates += 1
             dates.append(current_date)
-        m += 1
+        count_dates += 1
     return (dates[0], dates[-1])
 
 

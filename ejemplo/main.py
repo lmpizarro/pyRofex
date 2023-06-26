@@ -1,4 +1,5 @@
 from datetime import datetime
+from functools import partial
 from decouple import config
 import pyRofex
 from instruments import Ticker
@@ -7,6 +8,7 @@ from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
 import pandas as pd
+import numpy as np
 
 
 # 1-Initialize the environment
@@ -45,14 +47,21 @@ def test():
 def main():
     rfx = Rofex(tickers=[ggal_ago_23], entries=ticker_entries)
     market_data = rfx.fetch_market_data()
-    print(market_data[ggal_ago_23])
+    print(pd.DataFrame(market_data[ggal_ago_23]))
 
     history = rfx.fetch_history(days=40)
 
     df = pd.DataFrame.from_records(history[ggal_ago_23])
 
-    print(df)
+    print(df.iloc[-1].price, df.price.mean(), df.price.min(), df.price.max())
 
+    df['date'] = pd.to_datetime(df['datetime']).dt.date
+    gr = df.groupby(['date'])
+    result = gr.agg(Low=('price', np.min), High=('price', np.max),
+                    Mean=('price', np.mean), Vol=('size', np.sum))
+    result['Open'] = gr.price.first()
+    result['Close'] = gr.price.last()
+    print(result)
 
 
 if __name__ == "__main__":
