@@ -7,6 +7,7 @@ from periods import by_days
 import pandas as pd
 import numpy as np
 from order import Order
+from enums import OrderType
 
 
 dlr_ene_24 = Ticker(name='DLR/ENE24', cash_asigned=10_000)
@@ -58,11 +59,25 @@ class Rofex:
 
     @staticmethod
     def buy(order: Order):
-        ...
+        order_type = pyRofex.OrderType.LIMIT
+        if order.limit == OrderType.MARKET:
+            order_type = pyRofex.OrderType.MARKET
+
+        order = pyRofex.send_order(ticker=order.ticker.name,
+                                    side=pyRofex.Side.BUY,
+                                    size=order.size,
+                                    price=order.price,
+                                    order_type=order_type)
+        return order
+
 
     @staticmethod
     def sell(order: Order):
         ...
+
+    @staticmethod
+    def cancel(id:str):
+        return pyRofex.cancel_order(id)
 
 
 
