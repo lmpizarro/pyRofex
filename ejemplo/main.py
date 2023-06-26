@@ -1,13 +1,11 @@
 from datetime import datetime
-from functools import partial
 from decouple import config
 import pyRofex
 from instruments import Ticker
-from rofex import ticker_entries, Rofex, dlr_ene_24, ggal_ago_23
+from rofex import ticker_entries, Rofex, ggal_ago_23
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
-import pandas as pd
 
 
 # 1-Initialize the environment
