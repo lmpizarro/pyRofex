@@ -60,7 +60,7 @@ def main():
     # order_status = rfx.buy(order=my_order)
 
     # print(order_status)
-    print(rfx.cancel('426356796424478'))
+    print(rfx.status('426356796424478'))
 
 
 if __name__ == "__main__":

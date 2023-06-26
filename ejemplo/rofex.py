@@ -79,5 +79,24 @@ class Rofex:
     def cancel(id:str):
         return pyRofex.cancel_order(id)
 
+    @staticmethod
+    def status(id:str):
+        """
+        NEW
+        PENDING_NEW
+        PENDING_REPLACE
+        PENDING_CANCEL
+        REJECTED
+        PENDING_APPROVAL
+        CANCELLED
+        REPLACED
+        """
+        status = pyRofex.get_order_status(id)
+        print(status)
+
+        if status['status'] == 'OK':
+            return status['order']['status']
+
+
 
 
