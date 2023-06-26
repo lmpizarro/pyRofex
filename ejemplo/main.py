@@ -46,8 +46,9 @@ def test():
 def main():
     rfx = Rofex(tickers=[ggal_ago_23], entries=ticker_entries)
     market_data = rfx.fetch_market_data()
-    history = rfx.fetch_history(days=40)
+    print(market_data)
 
+    history = rfx.fetch_history(days=40)
     aggregate = rfx.hist_agg(history=history, ticker=ggal_ago_23)
     print(aggregate)
 

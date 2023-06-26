@@ -6,6 +6,7 @@ from typing import Any
 from periods import by_days
 import pandas as pd
 import numpy as np
+from order import Order
 
 
 dlr_ene_24 = Ticker(name='DLR/ENE24', cash_asigned=10_000)
@@ -47,8 +48,6 @@ class Rofex:
     def hist_agg(history:dict, ticker: Ticker) -> pd.DataFrame:
         df = pd.DataFrame.from_records(history[ggal_ago_23])
 
-        print(df.iloc[-1].price, df.price.mean(), df.price.min(), df.price.max())
-
         df['date'] = pd.to_datetime(df['datetime']).dt.date
         gr = df.groupby(['date'])
         result = gr.agg(Low=('price', np.min), High=('price', np.max),
@@ -56,6 +55,14 @@ class Rofex:
         result['Open'] = gr.price.first()
         result['Close'] = gr.price.last()
         return result
+
+    @staticmethod
+    def buy(order: Order):
+        ...
+
+    @staticmethod
+    def sell(order: Order):
+        ...
 
 
 
