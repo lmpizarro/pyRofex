@@ -10,15 +10,6 @@ from enums import OrderType
 from order_book import OrderBook
 
 
-dlr_ene_24 = Ticker(name='DLR/ENE24', cash_asigned=10_000)
-ggal_ago_23 = Ticker(name='GGAL/AGO23', cash_asigned=10_000)
-
-ticker_entries = [pyRofex.MarketDataEntry.BIDS,
-                  pyRofex.MarketDataEntry.OFFERS,
-                  pyRofex.MarketDataEntry.LAST]
-
-
-
 @dataclass(frozen=True)
 class MarketData:
     tickers: list[Ticker] = field(default=list)
@@ -57,9 +48,9 @@ class MarketData:
         return pyRofex.get_account_position(account=self.account, environment=self.environment)
 
     @staticmethod
-    def hist_agg(history: dict, ticker: Ticker) -> pd.DataFrame:
+    def hist_agg(history: list) -> pd.DataFrame:
         """Aggregate history to obtain HLCO candles by day"""
-        df = pd.DataFrame.from_records(history[ggal_ago_23])
+        df = pd.DataFrame.from_records(history)
 
         df['date'] = pd.to_datetime(df['datetime']).dt.date
         gr = df.groupby(['date'])

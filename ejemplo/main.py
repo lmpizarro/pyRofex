@@ -1,19 +1,10 @@
 from datetime import datetime
-from decouple import config
-import pyRofex
 from instruments import Ticker
-from rofex import ticker_entries, MarketData, ggal_ago_23
+from rofex import MarketData
 from rofex import Operations as rfx_operations
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
-
-
-# 1-Initialize the environment
-pyRofex.initialize(user=config('NAME'),
-                   password=config('PASS'),
-                   account=config('ACCOUNT'),
-                   environment=pyRofex.Environment.REMARKET)
 
 
 local_config = Config()
@@ -48,19 +39,18 @@ def now_time() -> str:
 
 
 def main():
-    rfx_md = MarketData(tickers=[ggal_ago_23], entries=ticker_entries, account=config(
-        'ACCOUNT'), environment=pyRofex.Environment.REMARKET)
+    rfx_md = MarketData(tickers=[local_config.rofex_ticker], entries=local_config.rofex_entries,
+                        account=local_config.account, environment=local_config.environment)
     market_data = rfx_md.fetch_market_data()
-    print(market_data[ggal_ago_23])
-    print(market_data[ggal_ago_23].spread())
-
+    print(market_data[local_config.rofex_ticker])
+    print(market_data[local_config.rofex_ticker].spread())
 
     history = rfx_md.fetch_history(days=40)
-    aggregate = rfx_md.hist_agg(history=history, ticker=ggal_ago_23)
+    aggregate = rfx_md.hist_agg(history=history[local_config.rofex_ticker])
     print(aggregate)
 
     my_order = CreateOrder.buy_stock_limit(
-        symbol=ggal_ago_23, units=10, price=800, date_time=now_time())
+        symbol=local_config.rofex_ticker, units=10, price=800, date_time=now_time())
 
     # order_status = rfx.buy(order=my_order)
 
