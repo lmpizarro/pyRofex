@@ -2,7 +2,8 @@ from datetime import datetime
 from decouple import config
 import pyRofex
 from instruments import Ticker
-from rofex import ticker_entries, Rofex, ggal_ago_23
+from rofex import ticker_entries, MarketData, ggal_ago_23
+from rofex import Operations as rfx_operations
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
@@ -47,14 +48,15 @@ def now_time() -> str:
 
 
 def main():
-    rfx = Rofex(tickers=[ggal_ago_23], entries=ticker_entries, account=config(
+    rfx_md = MarketData(tickers=[ggal_ago_23], entries=ticker_entries, account=config(
         'ACCOUNT'), environment=pyRofex.Environment.REMARKET)
-    market_data = rfx.fetch_market_data()
+    market_data = rfx_md.fetch_market_data()
+    print(market_data[ggal_ago_23])
     print(market_data[ggal_ago_23].spread())
 
 
-    history = rfx.fetch_history(days=40)
-    aggregate = rfx.hist_agg(history=history, ticker=ggal_ago_23)
+    history = rfx_md.fetch_history(days=40)
+    aggregate = rfx_md.hist_agg(history=history, ticker=ggal_ago_23)
     print(aggregate)
 
     my_order = CreateOrder.buy_stock_limit(
@@ -63,9 +65,9 @@ def main():
     # order_status = rfx.buy(order=my_order)
 
     # print(order_status)
-    print(rfx.status('426356796424478'))
+    print('...', rfx_operations.status('426356796424478'))
 
-    print(rfx.positions())
+    print(rfx_md.positions())
 
 
 if __name__ == "__main__":

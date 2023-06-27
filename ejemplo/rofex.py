@@ -14,7 +14,8 @@ dlr_ene_24 = Ticker(name='DLR/ENE24', cash_asigned=10_000)
 ggal_ago_23 = Ticker(name='GGAL/AGO23', cash_asigned=10_000)
 
 ticker_entries = [pyRofex.MarketDataEntry.BIDS,
-                  pyRofex.MarketDataEntry.OFFERS, pyRofex.MarketDataEntry.LAST]
+                  pyRofex.MarketDataEntry.OFFERS,
+                  pyRofex.MarketDataEntry.LAST]
 
 
 class BookOrder:
@@ -30,7 +31,7 @@ class BookOrder:
     @staticmethod
     def weighted_mean(list_dict):
         w_mean = 0
-        if len(list_dict) != 0:
+        if list_dict and len(list_dict) != 0:
             w_mean = sum([of['price'] * of['size'] for of in list_dict]
                          ) / sum([of['size'] for of in list_dict])
         return w_mean
@@ -38,6 +39,9 @@ class BookOrder:
     def spread(self):
         of_mean = BookOrder.weighted_mean(self.offer)
         bi_mean = BookOrder.weighted_mean(self.bid)
+
+        if not self.bid or not self.ask:
+            return 0, 0, 0, 0
 
         if len(self.bid) != 0 and len(self.offer) != 0:
             spread = self.offer[0]['price'] - self.bid[0]['price']
@@ -51,7 +55,7 @@ class BookOrder:
 
 
 @dataclass(frozen=True)
-class Rofex:
+class MarketData:
     tickers: list[Ticker] = field(default=list)
     entries: list[pyRofex.MarketDataEntry] = field(default=list)
     account: str = field(default='')
@@ -83,6 +87,10 @@ class Rofex:
                 history[ticker] = historic_trades['trades']
         return history
 
+    def positions(self):
+        """Get positions from rofex account"""
+        return pyRofex.get_account_position(account=self.account, environment=self.environment)
+
     @staticmethod
     def hist_agg(history: dict, ticker: Ticker) -> pd.DataFrame:
         """Aggregate history to obtain HLCO candles by day"""
@@ -95,6 +103,9 @@ class Rofex:
         result['Open'] = gr.price.first()
         result['Close'] = gr.price.last()
         return result
+
+
+class Operations:
 
     @staticmethod
     def buy(order: Order):
@@ -136,7 +147,7 @@ class Rofex:
 
         NEW, PENDING_NEW, PENDING_REPLACE, PENDING_CANCEL, REJECTED,
         PENDING_APPROVAL, CANCELLED, REPLACED
-        
+
         https://www.onixs.biz/fix-dictionary/4.4/msgtype_8_8.html
         """
         status = pyRofex.get_order_status(id)
@@ -144,7 +155,5 @@ class Rofex:
 
         if status['status'] == 'OK':
             return status['order']['status']
-
-    def positions(self):
-        """Get positions from rofex account"""
-        return pyRofex.get_account_position(account=self.account, environment=self.environment)
+        else:
+            return status['status']
