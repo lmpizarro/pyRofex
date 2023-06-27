@@ -40,15 +40,18 @@ def test():
 
     print(order.json)
 
-def now_time()->str:
+
+def now_time() -> str:
     return str(datetime.now(
         tz=local_config.project_tz).isoformat()).split('.')[0]
 
 
 def main():
-    rfx = Rofex(tickers=[ggal_ago_23], entries=ticker_entries)
+    rfx = Rofex(tickers=[ggal_ago_23], entries=ticker_entries, account=config(
+        'ACCOUNT'), environment=pyRofex.Environment.REMARKET)
     market_data = rfx.fetch_market_data()
-    print(market_data[ggal_ago_23])
+    print(market_data[ggal_ago_23].spread())
+
 
     history = rfx.fetch_history(days=40)
     aggregate = rfx.hist_agg(history=history, ticker=ggal_ago_23)
@@ -61,6 +64,8 @@ def main():
 
     # print(order_status)
     print(rfx.status('426356796424478'))
+
+    print(rfx.positions())
 
 
 if __name__ == "__main__":

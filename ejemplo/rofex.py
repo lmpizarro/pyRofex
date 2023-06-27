@@ -17,12 +17,48 @@ ticker_entries = [pyRofex.MarketDataEntry.BIDS,
                   pyRofex.MarketDataEntry.OFFERS, pyRofex.MarketDataEntry.LAST]
 
 
+class BookOrder:
+    def __init__(self, _offer, _bid, _la, _depth) -> None:
+        self.offer = _offer
+        self.bid = _bid
+        self.la = _la
+        self.depth = _depth
+
+    def __str__(self) -> str:
+        return f'depth {self.depth} LA {self.la} BI {self.bid} OF {self.offer} '
+
+    @staticmethod
+    def weighted_mean(list_dict):
+        w_mean = 0
+        if len(list_dict) != 0:
+            w_mean = sum([of['price'] * of['size'] for of in list_dict]
+                         ) / sum([of['size'] for of in list_dict])
+        return w_mean
+
+    def spread(self):
+        of_mean = BookOrder.weighted_mean(self.offer)
+        bi_mean = BookOrder.weighted_mean(self.bid)
+
+        if len(self.bid) != 0 and len(self.offer) != 0:
+            spread = self.offer[0]['price'] - self.bid[0]['price']
+            spread_pc = spread / \
+                (self.offer[0]['price'] + self.bid[0]['price'])
+            return spread, spread_pc, bi_mean, of_mean
+        elif len(self.bid) != 0:
+            return - self.bid[0]['price'], -1, bi_mean, of_mean
+        elif len(self.offer) != 0:
+            return self.offer[0]['price'], 1, bi_mean, of_mean
+
+
 @dataclass(frozen=True)
 class Rofex:
     tickers: list[Ticker] = field(default=list)
     entries: list[pyRofex.MarketDataEntry] = field(default=list)
+    account: str = field(default='')
+    environment: str = field(default='')
 
     def fetch_market_data(self, depth=2) -> list[Any]:
+        """Fetch market data for instruments"""
         market_data = {}
 
         for ticker in self.tickers:
@@ -30,11 +66,13 @@ class Rofex:
             md = pyRofex.get_market_data(
                 ticker=ticker.name, entries=self.entries, depth=depth)
             if md['status'] == 'OK':
-                market_data[ticker] = md['marketData']
+                market_data[ticker] = BookOrder(
+                    md['marketData']['OF'], md['marketData']['BI'], md['marketData']['LA'], depth)
 
         return market_data
 
     def fetch_history(self, days=5):
+        """Fetch history for instruments from Rofex"""
         history = {}
         end, start = by_days(days=days)
 
@@ -46,7 +84,8 @@ class Rofex:
         return history
 
     @staticmethod
-    def hist_agg(history:dict, ticker: Ticker) -> pd.DataFrame:
+    def hist_agg(history: dict, ticker: Ticker) -> pd.DataFrame:
+        """Aggregate history to obtain HLCO candles by day"""
         df = pd.DataFrame.from_records(history[ggal_ago_23])
 
         df['date'] = pd.to_datetime(df['datetime']).dt.date
@@ -59,37 +98,46 @@ class Rofex:
 
     @staticmethod
     def buy(order: Order):
+        """Execute buy order"""
         order_type = pyRofex.OrderType.LIMIT
         if order.limit == OrderType.MARKET:
             order_type = pyRofex.OrderType.MARKET
 
         order = pyRofex.send_order(ticker=order.ticker.name,
-                                    side=pyRofex.Side.BUY,
-                                    size=order.size,
-                                    price=order.price,
-                                    order_type=order_type)
+                                   side=pyRofex.Side.BUY,
+                                   size=order.size,
+                                   price=order.price,
+                                   order_type=order_type)
         return order
-
 
     @staticmethod
     def sell(order: Order):
-        ...
+        """Execute sell order"""
+        order_type = pyRofex.OrderType.LIMIT
+        if order.limit == OrderType.MARKET:
+            order_type = pyRofex.OrderType.MARKET
+
+        order = pyRofex.send_order(ticker=order.ticker.name,
+                                   side=pyRofex.Side.SELL,
+                                   size=order.size,
+                                   price=order.price,
+                                   order_type=order_type)
+        return order
 
     @staticmethod
-    def cancel(id:str):
+    def cancel(id: str):
+        """Cancel Order"""
         return pyRofex.cancel_order(id)
 
     @staticmethod
-    def status(id:str):
+    def status(id: str):
         """
-        NEW
-        PENDING_NEW
-        PENDING_REPLACE
-        PENDING_CANCEL
-        REJECTED
-        PENDING_APPROVAL
-        CANCELLED
-        REPLACED
+        Get the status of a rofex order
+
+        NEW, PENDING_NEW, PENDING_REPLACE, PENDING_CANCEL, REJECTED,
+        PENDING_APPROVAL, CANCELLED, REPLACED
+        
+        https://www.onixs.biz/fix-dictionary/4.4/msgtype_8_8.html
         """
         status = pyRofex.get_order_status(id)
         print(status)
@@ -97,6 +145,6 @@ class Rofex:
         if status['status'] == 'OK':
             return status['order']['status']
 
-
-
-
+    def positions(self):
+        """Get positions from rofex account"""
+        return pyRofex.get_account_position(account=self.account, environment=self.environment)
