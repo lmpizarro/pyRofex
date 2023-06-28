@@ -7,25 +7,30 @@ class OrderBookItem:
     price: float
     size: float
 
+@dataclass
+class Last:
+    price: float
+    size: float
+    date: int
+
 
 @dataclass
 class Spread:
-    bid: float
-    offer: float
+    bid: OrderBookItem
+    offer: OrderBookItem
     spread: float
     spread_pc: float
-    last: float
+    last: Last
 
 
 class OrderBook:
-    def __init__(self, _offer: list[OrderBookItem], _bid: list[OrderBookItem], _la: float, _depth: int) -> None:
+    def __init__(self, _offer: list[OrderBookItem], _bid: list[OrderBookItem], _la: float) -> None:
         self.offer: list(OrderBookItem) = _offer
         self.bid: list(OrderBookItem) = _bid
         self.la: float = _la
-        self.depth: int = _depth
 
     def __str__(self) -> str:
-        return f'depth {self.depth} LA {self.la} BI {self.bid} OF {self.offer} '
+        return f'LA {self.la} BI {self.bid} OF {self.offer} '
 
     @staticmethod
     def weighted_mean(list_order_book_item: list[OrderBookItem]) -> float:
@@ -43,7 +48,8 @@ class OrderBook:
             spread = self.offer[0].price - self.bid[0].price
             spread_pc = spread / \
                 (self.offer[0].price + self.bid[0].price)
-            return spread, spread_pc, self.bid[0].price, self.offer[0].price
+            all_spread = Spread(bid=self.bid[0], offer=self.offer[0], spread=spread, spread_pc=spread_pc, last=self.la)
+            return all_spread
         elif len(self.bid) != 0:
             return - self.bid[0].price, -1, self.bid[0].price, 0
         elif len(self.offer) != 0:

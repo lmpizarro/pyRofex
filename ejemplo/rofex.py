@@ -7,7 +7,7 @@ from instruments import TickerList
 from periods import by_days
 from order import Order
 from enums import OrderType
-from order_book import OrderBook, OrderBookContainer, OrderBookItem
+from order_book import OrderBook, OrderBookContainer, OrderBookItem, Last
 
 
 @dataclass(frozen=True)
@@ -16,6 +16,16 @@ class MarketData:
     entries: list[pyRofex.MarketDataEntry] = field(default=list)
     account: str = field(default='')
     environment: str = field(default='')
+
+    @staticmethod
+    def create_order_book(md_rofex: dict[Any, Any]) -> OrderBook:
+        bids = md_rofex['marketData']['OF']
+        asks = md_rofex['marketData']['BI']
+        list_bids = [OrderBookItem(price=e['price'], size=e['size']) for e in bids]
+        list_asks = [OrderBookItem(price=e['price'], size=e['size']) for e in asks]
+        last_price = md_rofex['marketData']['LA']
+        return OrderBook(list_bids, list_asks, Last(**last_price))
+
 
     def fetch_market_data(self, container: OrderBookContainer, depth=2) -> None:
 
@@ -26,12 +36,7 @@ class MarketData:
             md = pyRofex.get_market_data(
                 ticker=ticker.name, entries=self.entries, depth=depth)
             if md['status'] == 'OK':
-                bids = md['marketData']['OF']
-                asks = md['marketData']['BI']
-                list_bids = [OrderBookItem(price=e['price'], size=['size']) for e in bids]
-                list_asks = [OrderBookItem(price=e['price'], size=['size']) for e in asks]
-                last_price = md['marketData']['LA']
-                container.add(ticker, OrderBook(list_bids, list_asks, last_price, depth))
+                container.add(ticker, MarketData.create_order_book(md_rofex=md))
 
     def fetch_history(self, days=5):
         """Fetch history for instruments from Rofex"""
