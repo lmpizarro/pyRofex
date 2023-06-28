@@ -1,3 +1,6 @@
+from instruments import Ticker
+
+
 class OrderBook:
     def __init__(self, _offer, _bid, _la, _depth) -> None:
         self.offer = _offer
@@ -37,4 +40,18 @@ class OrderBook:
 
         if len(self.bid) != 0 and len(self.offer) != 0:
             return (self.bid[0]['price'], self.offer[0]['price'])
-        return (0,0)
+        return (0, 0)
+
+
+class OrderBookContainer:
+    """ A container for Order Books"""
+    def __init__(self) -> None:
+        self.order_books: dict[Ticker, OrderBook] = {}
+
+    def add(self, ticker: Ticker, order_book: OrderBook):
+        """ add and order book for a ticker"""
+        self.order_books[ticker] = order_book
+
+    def get(self, ticker: Ticker) -> OrderBook:
+        """ return the order book for a ticker"""
+        return self.order_books[ticker]

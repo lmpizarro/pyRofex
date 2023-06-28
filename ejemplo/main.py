@@ -5,6 +5,7 @@ from rofex import Operations as rfx_operations
 from enums import ContractType, OrderType, Side
 from order import Order, CreateOrder
 from config import Config
+from order_book import OrderBookContainer
 
 
 local_config = Config()
@@ -39,17 +40,21 @@ def now_time() -> str:
 
 
 def main():
+
+    order_books_container = OrderBookContainer()
     rfx_md = MarketData(tickers=[local_config.rofex_ticker], entries=local_config.rofex_entries,
                         account=local_config.account, environment=local_config.environment)
-    order_book = rfx_md.fetch_market_data()
-    print(order_book[local_config.rofex_ticker])
-    print(order_book[local_config.rofex_ticker].spread())
+    rfx_md.fetch_market_data(container=order_books_container)
 
-    bid_ask = order_book[local_config.rofex_ticker].bid_ask()
+    order_book = order_books_container.get(local_config.rofex_ticker)
+    print(order_book.spread())
+
+
+    bid_ask = order_books_container.get(local_config.rofex_ticker).bid_ask()
     if bid_ask != (0, 0):
         print(bid_ask)
 
-
+    exit()
     history = rfx_md.fetch_history(days=40)
     aggregate = rfx_md.hist_agg(history=history[local_config.rofex_ticker])
 

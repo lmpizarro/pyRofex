@@ -7,7 +7,7 @@ from instruments import Ticker
 from periods import by_days
 from order import Order
 from enums import OrderType
-from order_book import OrderBook
+from order_book import OrderBook, OrderBookContainer
 
 
 @dataclass(frozen=True)
@@ -17,19 +17,18 @@ class MarketData:
     account: str = field(default='')
     environment: str = field(default='')
 
-    def fetch_market_data(self, depth=2) -> list[Any]:
+    def fetch_market_data(self, container:OrderBookContainer, depth=2) -> OrderBookContainer:
         """Fetch market data for instruments"""
-        market_data = {}
 
         for ticker in self.tickers:
 
             md = pyRofex.get_market_data(
                 ticker=ticker.name, entries=self.entries, depth=depth)
             if md['status'] == 'OK':
-                market_data[ticker] = OrderBook(
-                    md['marketData']['OF'], md['marketData']['BI'], md['marketData']['LA'], depth)
+                container.add(ticker, OrderBook(
+                    md['marketData']['OF'], md['marketData']['BI'], md['marketData']['LA'], depth))
 
-        return market_data
+        return container
 
     def fetch_history(self, days=5):
         """Fetch history for instruments from Rofex"""
