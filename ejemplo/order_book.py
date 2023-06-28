@@ -20,7 +20,7 @@ class OrderBook:
         of_mean = OrderBook.weighted_mean(self.offer)
         bi_mean = OrderBook.weighted_mean(self.bid)
 
-        if not self.bid or not self.ask:
+        if not self.bid or not self.offer:
             return 0, 0, 0, 0
 
         if len(self.bid) != 0 and len(self.offer) != 0:
@@ -33,3 +33,8 @@ class OrderBook:
         elif len(self.offer) != 0:
             return self.offer[0]['price'], 1, bi_mean, of_mean
 
+    def bid_ask(self):
+
+        if len(self.bid) != 0 and len(self.offer) != 0:
+            return (self.bid[0]['price'], self.offer[0]['price'])
+        return (0,0)

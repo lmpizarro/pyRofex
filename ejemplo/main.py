@@ -41,23 +41,31 @@ def now_time() -> str:
 def main():
     rfx_md = MarketData(tickers=[local_config.rofex_ticker], entries=local_config.rofex_entries,
                         account=local_config.account, environment=local_config.environment)
-    market_data = rfx_md.fetch_market_data()
-    print(market_data[local_config.rofex_ticker])
-    print(market_data[local_config.rofex_ticker].spread())
+    order_book = rfx_md.fetch_market_data()
+    print(order_book[local_config.rofex_ticker])
+    print(order_book[local_config.rofex_ticker].spread())
+
+    bid_ask = order_book[local_config.rofex_ticker].bid_ask()
+    if bid_ask != (0, 0):
+        print(bid_ask)
+
 
     history = rfx_md.fetch_history(days=40)
     aggregate = rfx_md.hist_agg(history=history[local_config.rofex_ticker])
-    print(aggregate)
 
     my_order = CreateOrder.buy_stock_limit(
-        symbol=local_config.rofex_ticker, units=10, price=800, date_time=now_time())
+        symbol=local_config.rofex_ticker, units=100, price=bid_ask[0] + 10, date_time=now_time())
 
-    # order_status = rfx.buy(order=my_order)
+    ## order_status = rfx_operations.buy(order=my_order)
 
-    # print(order_status)
-    print('...', rfx_operations.status('426356796424478'))
+    ## print(order_status)
+    print('...', rfx_operations.status('426527968809194'))
 
     print(rfx_md.positions())
+
+    rfx_operations.cancel('426527968809194')
+    print('...', rfx_operations.status('426527968809194'))
+
 
 
 if __name__ == "__main__":
