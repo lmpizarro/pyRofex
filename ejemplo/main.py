@@ -1,5 +1,5 @@
 from datetime import datetime
-from instruments import Ticker
+from instruments import TickerList, Ticker
 from rofex import MarketData
 from rofex import Operations as rfx_operations
 from enums import ContractType, OrderType, Side
@@ -41,36 +41,47 @@ def now_time() -> str:
 
 def main():
 
-    order_books_container = OrderBookContainer()
-    rfx_md = MarketData(tickers=[local_config.rofex_ticker], entries=local_config.rofex_entries,
+    rofex_ticker_list = [
+        Ticker(name='DLR/JUL23', cash_asigned=10_000),
+        Ticker(name='DLR/AGO23', cash_asigned=10_000),
+        Ticker(name='DLR/SEP23', cash_asigned=10_000),
+        Ticker(name='DLR/OCT23', cash_asigned=10_000),
+        Ticker(name='DLR/NOV23', cash_asigned=10_000),
+    ]
+
+    tickers = TickerList(rofex_ticker_list)
+    order_book_container = OrderBookContainer()
+
+    rfx_md = MarketData(tickers=tickers, entries=local_config.rofex_entries,
                         account=local_config.account, environment=local_config.environment)
-    rfx_md.fetch_market_data(container=order_books_container)
+    rfx_md.fetch_market_data(container=order_book_container)
 
-    order_book = order_books_container.get(local_config.rofex_ticker)
-    print(order_book.spread())
+    for ticker, order_book in order_book_container.list():
 
+        print(ticker.name)
 
-    bid_ask = order_books_container.get(local_config.rofex_ticker).bid_ask()
-    if bid_ask != (0, 0):
-        print(bid_ask)
+        print(order_book.spread())
+
+        bid_ask = order_book_container.get(ticker=ticker).bid_ask()
+        if bid_ask != (0, 0):
+            print(bid_ask)
 
     exit()
     history = rfx_md.fetch_history(days=40)
-    aggregate = rfx_md.hist_agg(history=history[local_config.rofex_ticker])
+    aggregate = rfx_md.hist_agg(history=history[local_config.rofex_ggal_ago23])
 
     my_order = CreateOrder.buy_stock_limit(
-        symbol=local_config.rofex_ticker, units=100, price=bid_ask[0] + 10, date_time=now_time())
+        symbol=local_config.rofex_ggal_ago23, units=100, price=bid_ask[0] + 10, date_time=now_time())
 
-    ## order_status = rfx_operations.buy(order=my_order)
+    # order_status = rfx_operations.buy(order=my_order)
 
-    ## print(order_status)
+    # print(order_status)
     print('...', rfx_operations.status('426527968809194'))
 
     print(rfx_md.positions())
 
     rfx_operations.cancel('426527968809194')
     print('...', rfx_operations.status('426527968809194'))
-
 
 
 if __name__ == "__main__":

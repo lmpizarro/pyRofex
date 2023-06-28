@@ -12,7 +12,7 @@ class Config:
     password = config('PASS')
     account = config('ACCOUNT')
     environment = pyRofex.Environment.REMARKET
-    rofex_ticker = Ticker(name='GGAL/AGO23', cash_asigned=10_000)
+    rofex_ggal_ago23 = Ticker(name='GGAL/AGO23', cash_asigned=10_000)
     rofex_entries = [pyRofex.MarketDataEntry.BIDS,
                      pyRofex.MarketDataEntry.OFFERS,
                      pyRofex.MarketDataEntry.LAST]
