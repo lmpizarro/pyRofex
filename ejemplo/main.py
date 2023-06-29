@@ -47,6 +47,7 @@ def main():
         Ticker(name='DLR/SEP23', cash_asigned=10_000),
         Ticker(name='DLR/OCT23', cash_asigned=10_000),
         Ticker(name='DLR/NOV23', cash_asigned=10_000),
+        Ticker(name='DLR/DIC23', cash_asigned=10_000),
     ]
 
     tickers = TickerList(rofex_ticker_list)
@@ -66,9 +67,9 @@ def main():
         if bid_ask != (0, 0):
             print(bid_ask)
 
-    exit()
     history = rfx_md.fetch_history(days=40)
-    aggregate = rfx_md.hist_agg(history=history[local_config.rofex_ggal_ago23])
+    for ticker in tickers:
+        aggregate = rfx_md.hist_agg(history=history[ticker])
 
     my_order = CreateOrder.buy_stock_limit(
         symbol=local_config.rofex_ggal_ago23, units=100, price=bid_ask[0] + 10, date_time=now_time())
