@@ -38,22 +38,18 @@ class OrderBook:
         return w_mean
 
     def spread(self):
-        of_mean = OrderBook.weighted_mean(self.offer)
-        bi_mean = OrderBook.weighted_mean(self.bid)
-
         if not self.bid or not self.offer:
-            return 0, 0, 0, 0
+            return Spread(0,0,0,0,0)
 
         if len(self.bid) != 0 and len(self.offer) != 0:
             spread = self.offer[0].price - self.bid[0].price
             spread_pc = spread / \
                 (self.offer[0].price + self.bid[0].price)
-            all_spread = Spread(bid=self.bid[0], offer=self.offer[0], spread=spread, spread_pc=spread_pc, last=self.la)
-            return all_spread
+            return Spread(bid=self.bid[0], offer=self.offer[0], spread=spread, spread_pc=spread_pc, last=self.la)
         elif len(self.bid) != 0:
-            return - self.bid[0].price, -1, self.bid[0].price, 0
+            return Spread(bid=self.bid[0],  offer=0, spread=-self.bid[0].price, spread_pc=-1, last=self.last)
         elif len(self.offer) != 0:
-            return self.offer[0].price, 1, 0, self.offer[0].price
+            return Spread(bid=0,  offer=self.offer[0], spread=self.offer[0].price, spread_pc=1, last=self.last)
 
     def bid_ask(self):
 
