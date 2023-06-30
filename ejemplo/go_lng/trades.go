@@ -2,8 +2,10 @@ package main
 
 import (
 	"fmt"
-	"gonum.org/v1/gonum/stat"
 	"sort"
+	"time"
+
+	"gonum.org/v1/gonum/stat"
 )
 
 type Trade struct {
@@ -26,30 +28,68 @@ type Describe struct {
 	mean  float64
 	stdev float64
 	median float64
+	varz float64
+	mode float64
 }
 
-func ReduceTrades(trades []Trade) Describe {
-	var describe Describe
-
-	var xs []float64
-	accum_prices := 0.0
-	for _, trade := range trades {
-		accum_prices += trade.Price
-		xs = append(xs, trade.Price)
+// returns := Diff(xs)
+func Diff(xs []float64) []float64 {
+	xy := xs[:len(xs)-1]
+	var diff []float64
+	for i, x := range xy {
+		diff = append(diff, xs[i+1]-x)
 	}
 
-	describe.len = len(xs)
-	describe.mean = stat.Mean(xs, nil)
-	describe.stdev = stat.StdDev(xs, nil)
+	return diff
+}
+
+func describe(xs []float64) Describe {
+	var descrXs Describe
+	descrXs.len = len(xs)
+	descrXs.mean = stat.Mean(xs, nil)
+	descrXs.stdev = stat.StdDev(xs, nil)
 	sort.Float64s(xs)
-	describe.median =  stat.Quantile(0.5, stat.Empirical, xs, nil)
-	return describe
+	descrXs.median =  stat.Quantile(0.5, stat.Empirical, xs, nil)
+	descrXs.varz = stat.Variance(xs, nil)
+	descrXs.mode, _ = stat.Mode(xs, nil)
+
+	return descrXs
+}
+
+func ReduceTrades(trades []Trade) (Describe, Describe) {
+	// var m map[string][]Trade
+	m := make(map[string][]Trade)
+
+	var prixes []float64
+	var sixes []float64
+	for _, trade := range trades {
+		prixes = append(prixes, trade.Price)
+		sixes = append(sixes, trade.Size)
+
+		t := time.Unix(trade.Servertime/1000, 0)
+		year, month, day := t.Date()
+
+		p := fmt.Sprintf("%d-%s-%d", year, month, day)
+
+		m[p] = append(m[p], trade)
+
+	}
+
+	descrPrices := describe(prixes)
+
+	descrSizes := describe(sixes)
+	for key, value := range m {
+    	fmt.Println("Key:", key, "Value:", value)
+	}
+	return descrPrices, descrSizes
 }
 
 func (describe *Describe) DescribeRepr() string {
-	return fmt.Sprintf("mean %.2f len %d stdev %.2f median %.2f",
+	return fmt.Sprintf("mean %.2f len %d stdev %.2f median %.2f var %.2f mode %.2f",
 		describe.mean,
 		describe.len,
 		describe.stdev,
-		describe.median)
+		describe.median,
+		describe.varz,
+	describe.mode)
 }

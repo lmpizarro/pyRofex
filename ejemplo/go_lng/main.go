@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func main__(){
+func main() {
 	dlrs := [6]string{"DLR/AGO23", "DLR/SEP23", "DLR/OCT23", "DLR/NOV23", "DLR/DIC23", "DLR/ENE24"}
 	token := Login()
 
@@ -22,7 +22,6 @@ func main__(){
 		t_last := time.Unix(last.Date/1000, 0)
 		fmt.Println(t_last, last.Price, last.Size)
 
-
 		period := Seven_days_from_now()
 
 		url := HistoricData(ticker, period.from, period.to)
@@ -30,25 +29,26 @@ func main__(){
 		var unmarshaled_data TradesList
 
 		json.Unmarshal(json_data, &unmarshaled_data)
-		if unmarshaled_data.Status  == "OK" {
+		if unmarshaled_data.Status == "OK" {
 			trades := unmarshaled_data.Trades
 
-			describe := ReduceTrades(trades)
-			fmt.Println(describe.DescribeRepr())
+			descPrices, descSizes := ReduceTrades(trades)
+			fmt.Println("Prices ", descPrices.DescribeRepr())
+			fmt.Println("Sizes ", descSizes.DescribeRepr())
 		}
-
 
 	}
 }
 
-func main(){
-	var xs = [5]float64{1, 2, 3, 4, 5}
+func main__() {
+	var xs = []float64{1, 2, 3, 4, 5}
 	xy := xs[:len(xs)-1]
 	fmt.Println(xs[1:], xy)
 
-	var diff [] float64
+	var diff []float64
 	for i, x := range xy {
-		diff = append(diff,xs[i+1]-x)
+		diff = append(diff, xs[i+1]-x)
 	}
 	fmt.Println(diff)
+	fmt.Println(Diff(xs))
 }
