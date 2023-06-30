@@ -103,3 +103,20 @@ func (md *marketData) Ask() []BIOF {
 func (md *marketData) Last() PriceSizeDate {
 	return md.MarketData.La
 }
+
+func GetHistoricData(ticker, token string, period Period) []Trade{
+	url := HistoricData(ticker, period.from, period.to)
+
+	json_data, _ := rfx_get_req(url, token)
+	var unmarshaled_data TradesList
+
+	json.Unmarshal(json_data, &unmarshaled_data)
+
+	if unmarshaled_data.Status == "OK" {
+		return unmarshaled_data.Trades
+
+	}
+
+	var trades []Trade
+	return trades
+}
