@@ -45,6 +45,7 @@ func HistoricData(symbol, fromDate, toDate string) string {
 	// TODO:  YYYY-MM-DD
 	return fmt.Sprintf(Url+historic_trades, symbol, fromDate, toDate)
 }
+
 // https://mholt.github.io/json-to-go/
 
 const Url_Auth = Url + auth
@@ -104,8 +105,8 @@ func (md *marketData) Last() PriceSizeDate {
 	return md.MarketData.La
 }
 
-func GetHistoricData(ticker, token string, period Period) []Trade{
-	url := HistoricData(ticker, period.from, period.to)
+func GetHistoricData(ticker, token string, period Period) []Trade {
+	url := HistoricData(ticker, period.From, period.To)
 
 	json_data, _ := rfx_get_req(url, token)
 	var unmarshaled_data TradesList

@@ -23,17 +23,25 @@ type TradesList struct {
 	Trades []Trade `json:"trades"`
 }
 
-type Describe struct {
-	len    int
-	mean   float64
-	stdev  float64
-	median float64
-	varz   float64
-	mode   float64
-	high   float64
-	low    float64
-	first  float64
-	last   float64
+type StatAttr struct {
+	Len    int     `json:"len"`
+	Mean   float64 `json:"mean"`
+	Stdev  float64 `json:"stdev"`
+	Median float64 `json:"median"`
+	Varz   float64 `json:"var"`
+	Mode   float64 `json:"mode"`
+	High   float64 `json:"high"`
+	Low    float64 `json:"low"`
+	First  float64 `json:"first"`
+	Last   float64 `json:"last"`
+}
+
+type HistStatAttr struct {
+	Period      Period `json:"period"`
+	StatPrices  StatAttr `json:"statPrices"`
+	StatSizes   StatAttr `json:"statSizes"`
+	Vwap        float64 `json:"vwap"`
+	StatDailies []HistStatAttr `json:"statDailies"`
 }
 
 // returns := Diff(xs)
@@ -62,24 +70,24 @@ func findMinAndMax(xs []float64) (min float64, max float64) {
 	return min, max
 }
 
-func describe(xs []float64) Describe {
-	var descrXs Describe
-	descrXs.len = len(xs)
-	descrXs.mean = stat.Mean(xs, nil)
-	descrXs.stdev = stat.StdDev(xs, nil)
+func describe(xs []float64) StatAttr {
+	var descrXs StatAttr
+	descrXs.Len = len(xs)
+	descrXs.Mean = stat.Mean(xs, nil)
+	descrXs.Stdev = stat.StdDev(xs, nil)
 	sort.Float64s(xs)
-	descrXs.median = stat.Quantile(0.5, stat.Empirical, xs, nil)
-	descrXs.varz = stat.Variance(xs, nil)
-	descrXs.mode, _ = stat.Mode(xs, nil)
+	descrXs.Median = stat.Quantile(0.5, stat.Empirical, xs, nil)
+	descrXs.Varz = stat.Variance(xs, nil)
+	descrXs.Mode, _ = stat.Mode(xs, nil)
 	min, max := findMinAndMax(xs)
-	descrXs.high = max
-	descrXs.low = min
-	descrXs.first = xs[0]
-	descrXs.last = xs[len(xs)-1]
+	descrXs.High = max
+	descrXs.Low = min
+	descrXs.First = xs[0]
+	descrXs.Last = xs[len(xs)-1]
 	return descrXs
 }
 
-func ReduceTrades(trades []Trade) (descrPrices Describe, descrSizes Describe, sizePrice float64) {
+func ReduceTrades(trades []Trade) (descrPrices StatAttr, descrSizes StatAttr, sizePrice float64) {
 
 	var prixes []float64
 	var sixes []float64
@@ -115,12 +123,12 @@ func DailyOhlcTrades(trades []Trade) map[string][]Trade {
 	return m
 }
 
-func (describe *Describe) DescribeRepr() string {
+func (describe *StatAttr) DescribeRepr() string {
 	return fmt.Sprintf("mean %.2f len %d stdev %.2f median %.2f var %.2f mode %.2f",
-		describe.mean,
-		describe.len,
-		describe.stdev,
-		describe.median,
-		describe.varz,
-		describe.mode)
+		describe.Mean,
+		describe.Len,
+		describe.Stdev,
+		describe.Median,
+		describe.Varz,
+		describe.Mode)
 }
