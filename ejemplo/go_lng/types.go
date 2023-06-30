@@ -29,5 +29,6 @@ type marketData struct {
 	Aggregated bool `json:"aggregated"`
 }
 
-
-
+type Ticker struct {
+	Name string
+}

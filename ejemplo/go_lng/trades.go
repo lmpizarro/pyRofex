@@ -132,3 +132,24 @@ func (describe *StatAttr) DescribeRepr() string {
 		describe.Varz,
 		describe.Mode)
 }
+
+func HistoricStat(trades []Trade,period Period) HistStatAttr {
+	var histStat HistStatAttr
+	descPrices, descSizes, vprices := ReduceTrades(trades)
+
+	histStat.StatPrices = descPrices
+	histStat.StatSizes = descSizes
+	histStat.Vwap = vprices
+	histStat.Period = period
+
+	m := DailyOhlcTrades(trades)
+	for key, dailyTrades := range m {
+		descPrices, descSizes, vprices = ReduceTrades(dailyTrades)
+		histStat.StatDailies = append(histStat.StatDailies,
+			HistStatAttr{StatPrices: descPrices,
+				StatSizes: descSizes, Vwap: vprices, Period: Period{From: key, To: key}})
+	}
+
+	return histStat
+}
+
