@@ -24,12 +24,16 @@ type TradesList struct {
 }
 
 type Describe struct {
-	len   int
-	mean  float64
-	stdev float64
+	len    int
+	mean   float64
+	stdev  float64
 	median float64
-	varz float64
-	mode float64
+	varz   float64
+	mode   float64
+	high   float64
+	low    float64
+	first  float64
+	last   float64
 }
 
 // returns := Diff(xs)
@@ -43,28 +47,61 @@ func Diff(xs []float64) []float64 {
 	return diff
 }
 
+func findMinAndMax(xs []float64) (min float64, max float64) {
+
+	min = xs[0]
+	max = xs[0]
+	for _, value := range xs {
+		if value < min {
+			min = value
+		}
+		if value > max {
+			max = value
+		}
+	}
+	return min, max
+}
+
 func describe(xs []float64) Describe {
 	var descrXs Describe
 	descrXs.len = len(xs)
 	descrXs.mean = stat.Mean(xs, nil)
 	descrXs.stdev = stat.StdDev(xs, nil)
 	sort.Float64s(xs)
-	descrXs.median =  stat.Quantile(0.5, stat.Empirical, xs, nil)
+	descrXs.median = stat.Quantile(0.5, stat.Empirical, xs, nil)
 	descrXs.varz = stat.Variance(xs, nil)
 	descrXs.mode, _ = stat.Mode(xs, nil)
-
+	min, max := findMinAndMax(xs)
+	descrXs.high = max
+	descrXs.low = min
+	descrXs.first = xs[0]
+	descrXs.last = xs[len(xs)-1]
 	return descrXs
 }
 
-func ReduceTrades(trades []Trade) (Describe, Describe) {
-	// var m map[string][]Trade
-	m := make(map[string][]Trade)
+func ReduceTrades(trades []Trade) (descrPrices Describe, descrSizes Describe, sizePrice float64) {
 
 	var prixes []float64
 	var sixes []float64
+	var accum_sizes float64 = 0
+	var accum_prods float64 = 0
 	for _, trade := range trades {
 		prixes = append(prixes, trade.Price)
 		sixes = append(sixes, trade.Size)
+		accum_sizes += trade.Size
+		accum_prods += trade.Price * trade.Size
+	}
+
+	descrPrices = describe(prixes)
+
+	descrSizes = describe(sixes)
+
+	return descrPrices, descrSizes, accum_prods / accum_sizes
+}
+
+func DailyOhlcTrades(trades []Trade) map[string][]Trade {
+	m := make(map[string][]Trade)
+	for _, trade := range trades {
 
 		t := time.Unix(trade.Servertime/1000, 0)
 		year, month, day := t.Date()
@@ -75,13 +112,7 @@ func ReduceTrades(trades []Trade) (Describe, Describe) {
 
 	}
 
-	descrPrices := describe(prixes)
-
-	descrSizes := describe(sixes)
-	for key, value := range m {
-    	fmt.Println("Key:", key, "Value:", value)
-	}
-	return descrPrices, descrSizes
+	return m
 }
 
 func (describe *Describe) DescribeRepr() string {
@@ -91,5 +122,5 @@ func (describe *Describe) DescribeRepr() string {
 		describe.stdev,
 		describe.median,
 		describe.varz,
-	describe.mode)
+		describe.mode)
 }

@@ -23,10 +23,18 @@ func main() {
 
 		period := Seven_days_from_now()
 		trades := GetHistoricData(ticker, token, period)
-		descPrices, descSizes := ReduceTrades(trades)
+		descPrices, descSizes, vprices := ReduceTrades(trades)
 		fmt.Println("Prices ", descPrices.DescribeRepr())
 		fmt.Println("Sizes ", descSizes.DescribeRepr())
+		fmt.Println("v prices ", vprices )
+		m := DailyOhlcTrades(trades)
+		for key, dailyTrades := range m {
+			descPrices, descSizes, vprices = ReduceTrades(dailyTrades)
+ 		   	fmt.Println("\n Key:", key, "Value: ")
+			fmt.Printf("prices %.2f %.2f ", descPrices.mean, vprices)
+			fmt.Printf("sizes %.2f \n", descSizes.mean)
 
+		}
 	}
 }
 
