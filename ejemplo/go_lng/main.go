@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func main(){
+func main__(){
 	dlrs := [6]string{"DLR/AGO23", "DLR/SEP23", "DLR/OCT23", "DLR/NOV23", "DLR/DIC23", "DLR/ENE24"}
 	token := Login()
 
@@ -39,4 +39,16 @@ func main(){
 
 
 	}
+}
+
+func main(){
+	var xs = [5]float64{1, 2, 3, 4, 5}
+	xy := xs[:len(xs)-1]
+	fmt.Println(xs[1:], xy)
+
+	var diff [] float64
+	for i, x := range xy {
+		diff = append(diff,xs[i+1]-x)
+	}
+	fmt.Println(diff)
 }

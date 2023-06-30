@@ -1,7 +1,10 @@
 package main
 
-import "fmt"
-
+import (
+	"fmt"
+	"gonum.org/v1/gonum/stat"
+	"sort"
+)
 
 type Trade struct {
 	Symbol     string  `json:"symbol"`
@@ -12,31 +15,41 @@ type Trade struct {
 }
 
 type TradesList struct {
-	Status string `json:"status"`
-	Symbol string `json:"symbol"`
-	Market string `json:"market"`
-	Trades [] Trade `json:"trades"`
+	Status string  `json:"status"`
+	Symbol string  `json:"symbol"`
+	Market string  `json:"market"`
+	Trades []Trade `json:"trades"`
 }
 
 type Describe struct {
-	len int
-	mean float64
+	len   int
+	mean  float64
+	stdev float64
+	median float64
 }
 
-func ReduceTrades(trades []Trade) Describe{
+func ReduceTrades(trades []Trade) Describe {
 	var describe Describe
-	describe.len = len(trades)
 
+	var xs []float64
 	accum_prices := 0.0
-	for _, trade := range trades{
+	for _, trade := range trades {
 		accum_prices += trade.Price
+		xs = append(xs, trade.Price)
 	}
 
-	describe.mean = accum_prices / float64(describe.len)
-
+	describe.len = len(xs)
+	describe.mean = stat.Mean(xs, nil)
+	describe.stdev = stat.StdDev(xs, nil)
+	sort.Float64s(xs)
+	describe.median =  stat.Quantile(0.5, stat.Empirical, xs, nil)
 	return describe
 }
 
-func (describe *Describe) DescribeRepr () string{
-	return fmt.Sprintf("mean %.2f len %d", describe.mean, describe.len)
+func (describe *Describe) DescribeRepr() string {
+	return fmt.Sprintf("mean %.2f len %d stdev %.2f median %.2f",
+		describe.mean,
+		describe.len,
+		describe.stdev,
+		describe.median)
 }
