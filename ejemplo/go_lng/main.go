@@ -11,7 +11,7 @@ func main() {
 					    {"DLR/NOV23"}, {"DLR/DIC23"}, {"DLR/ENE24"}}
 	token := Login()
 
-	for _, ticker := range dlrs {
+ 	for _, ticker := range dlrs {
 
 		mapTickerOrderBook := orderBook(ticker.Name, token)
 
@@ -22,7 +22,7 @@ func main() {
 
 	}
 
-/* 	period := Seven_days_from_now()
+	period := Seven_days_from_now()
 	for _, ticker := range dlrs {
 
 		trades := GetHistoricData(ticker.Name, token, period)
@@ -34,5 +34,5 @@ func main() {
 		for _, e := range histStat.StatDailies {
 			fmt.Println(e.Period, e.StatPrices.Mean)
 		}
-	} */
+	}
 }
