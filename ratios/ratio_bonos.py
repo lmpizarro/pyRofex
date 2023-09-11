@@ -1,8 +1,9 @@
 import pandas as pd
+import matplotlib.pyplot as plt
 from pathlib import Path
 
 
-FORMAT_FILENAME = "{0}D - Cotizaciones historicas.csv"
+FORMAT_FILENAME = "{0}{1} - Cotizaciones historicas.csv"
 DATA_PATH = "datos"
 
 def change_index(df_bono: pd.DataFrame) -> pd.DataFrame:
@@ -26,9 +27,9 @@ class CSVS:
         return f"gd{year}".upper()
 
     @staticmethod
-    def read_bono_al(year:int) -> pd.DataFrame:
+    def read_bono_al(year:int, D=True) -> pd.DataFrame:
         key_al = CSVS.get_key_al(year=year)
-        filename_al = FORMAT_FILENAME.format(key_al)
+        filename_al = FORMAT_FILENAME.format(key_al, 'D' if D else '')
         filename_al = Path(DATA_PATH) / filename_al
         print(filename_al)
         df_al = CSVS.read_bono(filename=filename_al)
@@ -37,25 +38,25 @@ class CSVS:
 
 
     @staticmethod
-    def read_bono_gd(year:int):
+    def read_bono_gd(year:int, D=True):
         key_gd = CSVS.get_key_gd(year)
-        filename_gd = FORMAT_FILENAME.format(key_gd)
+        filename_gd = FORMAT_FILENAME.format(key_gd, 'D' if D else '')
         filename_gd = Path(DATA_PATH) / filename_gd
         print(filename_gd)
         df_gd = CSVS.read_bono(filename=filename_gd)
         return  df_gd
 
-def regressor(df_al_gd: pd.DataFrame):
+def regressor(df_al_gd: pd.DataFrame, key='ratio'):
     x = df_al_gd.index
-    y = df_al_gd.ratio
+    y = df_al_gd[key]
     from scipy import stats
 
     slope, intercept, r, p, std_err = stats.linregress(x, y)
 
-    def myfunc(x):
+    def regress_func(x):
         return slope * x + intercept
 
-    regress = list(map(myfunc, x))
+    regress = list(map(regress_func, x))
     return x, y, regress
 
 def calc_ratio(df_gd, df_al):
@@ -73,7 +74,6 @@ def calc_ratio(df_gd, df_al):
 def plot_them(df_al_gd):
     print(df_al_gd.tail())
 
-    import matplotlib.pyplot as plt
     fig, ax = plt.subplots(figsize=(10, 5.7), layout='constrained')
 
     ax.plot(df_al_gd.index, df_al_gd.ratio)
@@ -83,18 +83,18 @@ def plot_them(df_al_gd):
     ax.legend(['ratio', 'regresion', 'media'])
     plt.show()
 
-def calc_ratio_bono(year=29):
-    df_gd = CSVS.read_bono_gd(year=year)
-    df_al = CSVS.read_bono_al(year=year)
+def calc_ratio_bono(year=29, D=True):
+    df_gd = CSVS.read_bono_gd(year=year, D=D)
+    df_al = CSVS.read_bono_al(year=year, D=D)
 
     df_al_gd = calc_ratio(df_gd=df_gd, df_al=df_al)
 
     return df_al_gd
 
-def calc_list_bonos(years=[29, 30, 35, 38, 41]):
+def calc_list_bonos(years=[29, 30, 35, 38, 41], D=True):
     ratios = {}
     for year in years:
-        ratios[year] = calc_ratio_bono(year=year)
+        ratios[year] = calc_ratio_bono(year=year, D=D)
     return ratios
 
 def get_plotly_fig(df_ratio):
@@ -104,7 +104,7 @@ def get_plotly_fig(df_ratio):
 
     df_ratio["fecha"] = pd.to_datetime(df_ratio["fecha"], format="%Y-%m-%d").dt.date
 
-    bonds = f"{df_ratio['especie_al'][0]}/{df_ratio['especie_al'][0]}"
+    bonds = f"{df_ratio['especie_gd'][0]}/{df_ratio['especie_al'][0]}"
 
     fig = go.Figure()
 
@@ -126,12 +126,36 @@ def get_plotly_fig(df_ratio):
 
 def main():
     years =[29, 30, 35, 38, 41]
-    ratios = calc_list_bonos(years=years)
+    ratios = calc_list_bonos(years=years, D=False)
     for year, df_ratio in ratios.items():
         plot_them(df_ratio)
 
         fig = get_plotly_fig(df_ratio=df_ratio)
         fig.show()
 
+def mep_bono(year=29):
+    df_al_D = CSVS.read_bono_al(year=year, D=True)
+    df_al_P = CSVS.read_bono_al(year=year, D=False)
+
+    df_al_D = df_al_D[['fecha', 'cierre']]
+    df_al_P = df_al_P[['fecha', 'cierre']]
+
+    df_al_gd  = df_al_D.merge(df_al_P, left_on='fecha', right_on='fecha', suffixes=('_d', '_p'))
+    df_al_gd['mep'] = df_al_gd['cierre_p'] / df_al_gd['cierre_d']
+
+    x, y, regres = regressor(df_al_gd=df_al_gd, key='mep')
+
+    df_al_gd['regres'] = regres
+
+    df_al_gd = change_index(df_al_gd)
+
+    return df_al_gd
+
+
 if __name__ == "__main__":
-    main()
+    # main()
+    year = 41
+    df_al_gd = mep_bono(year=year)
+    plt.plot(df_al_gd.mep)
+    plt.plot(df_al_gd.regres)
+    plt.show()
