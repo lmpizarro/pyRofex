@@ -32,10 +32,17 @@ settings = {
         "Detalle": "Reservas Internacionales del BCRA (en millones de dólares - cifras provisorias sujetas a cambio de valuación)",
     },
     "inflacion": {"Serie": "7931",
-                  "Detalle":"Inflación mensual (variación en )"}
+                  "Detalle":"Inflación mensual (variación en )"},
+    "leliq":{"Serie": "7926",
+             "Detalle": "LELIQ saldos (en millones de pesos)"}
+
 }
 
 def variables_bcra(tipo="cer", desde="2016-04-01", hasta=None):
+
+    variables = list(settings.keys())
+    variables.remove("reservas")
+    variables.remove("leliq")
 
     url = "https://www.bcra.gob.ar/PublicacionesEstadisticas/Principales_variables_datos.asp"
 
@@ -59,8 +66,9 @@ def variables_bcra(tipo="cer", desde="2016-04-01", hasta=None):
 
     df_cer = pd.read_html(r_text, thousands=".")[0]
 
-    if tipo != "reservas":
+    if tipo in variables:
         df_cer = df_cer.apply(lambda x: x.str.replace(",", "."))
+
     df_cer["Fecha"] = pd.to_datetime(df_cer["Fecha"], format="%d/%m/%Y").dt.date
     df_cer[["Valor"]] = df_cer[["Valor"]].astype("float64")
     df_cer.set_index("Fecha", inplace=True)
@@ -132,10 +140,17 @@ def indice_merval(start="2015-01-01"):  # to be deleted
 
 
 if __name__ == "__main__":
+    dfLeliq = variables_bcra(tipo="leliq", desde="2015-01-01")
     dfCER = variables_bcra(tipo="cer", desde="2015-01-01")
     dfMayorista = variables_bcra(tipo="mayorista", desde="2015-01-01")
     dfCcl = dolar_ccl()
     dfMep = dolar_mep()
+
+    dfLeliqCer = pd.merge(dfCER, dfLeliq, left_index=True, right_index=True)
+    dfLeliqCer["rLeliqCER"] = dfLeliqCer.leliq / dfLeliqCer.cer
+
+    plt.plot(dfLeliqCer.rLeliqCER)
+    plt.show()
 
     dfMayCer = pd.merge(dfMayorista, dfCER, left_index=True, right_index=True)
     dfMayCer = pd.merge(dfMayCer, dfCcl, left_index=True, right_index=True)
