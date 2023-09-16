@@ -65,7 +65,7 @@ def variables_bcra(tipo="cer", desde="2016-04-01", hasta=None):
     df_cer[["Valor"]] = df_cer[["Valor"]].astype("float64")
     df_cer.set_index("Fecha", inplace=True)
     df_cer.rename(columns={"Valor": tipo}, inplace=True)
-    
+
     return df_cer
 
 
@@ -74,7 +74,7 @@ def dolar_mep(desde="2015-01-01", hasta=None):
     if not hasta:
         hasta = datetime.now().date().strftime("%Y-%m-%d")
         print(hasta)
-    
+
     # MEP ordenado de mayor a menor comienza 24 03 2020
     url = f"https://mercados.ambito.com/dolarrava/mep/historico-general/{desde}/{hasta}"
     df_dolar = pd.read_json(url)
@@ -95,7 +95,7 @@ def dolar_mep(desde="2015-01-01", hasta=None):
 
 
 def dolar_ccl(start="2015-01-01"):
-    tickers = ["GGAL", "GGAL.BA", "AAPL.BA", "AAPL", "ARS=X", "YPF", "YPFD.BA", "M.BA"]
+    tickers = ["GGAL", "GGAL.BA", "AAPL.BA", "AAPL", "ARS=X", "YPF", "YPFD.BA", "M.BA", "PAM", "PAMP.BA"]
     df_close = yf.download(tickers, start=start, auto_adjust=True)["Close"]
     df_close.dropna(inplace=True)
     df_close["cclgal"] = 10 * df_close["GGAL.BA"] / df_close["GGAL"]
@@ -108,7 +108,7 @@ def dolar_ccl(start="2015-01-01"):
 
     return df_close
 
-def indice_merval(start="2015-01-01"):
+def indice_merval(start="2015-01-01"):  # to be deleted
     # log_return = np.log(vfiax_monthly.open / vfiax_monthly.open.shift())
 
     tickers = ["ARS=X", "M.BA"]
@@ -147,7 +147,18 @@ if __name__ == "__main__":
 
     dfMayCer['rMerARSCer'] = dfMayCer['M.BA'] / dfMayCer['cer']
     dfMayCer['rMerCclCer'] = dfMayCer['MerCcl'] / dfMayCer['cer']
-    dfMayCer = dfMayCer.truncate(before="2019-12-30") 
+
+    dfMayCer['rGGALCer'] = dfMayCer['GGAL'] / dfMayCer['cer']
+    dfMayCer['rGGALBACer'] = dfMayCer['GGAL.BA'] / dfMayCer['cer']
+
+    dfMayCer['rYPFCer'] = dfMayCer['YPF'] / dfMayCer['cer']
+    dfMayCer['rYPFBACer'] = dfMayCer['YPFD.BA'] / dfMayCer['cer']
+
+    dfMayCer['rPAMPCer'] = dfMayCer['PAM'] / dfMayCer['cer']
+    dfMayCer['rPAMPBACer'] = dfMayCer['PAMP.BA'] / dfMayCer['cer']
+
+
+    dfMayCer = dfMayCer.truncate(before="2019-12-30")
     print(dfMayCer.keys())
 
     figure, axis = plt.subplots(2, 1)
@@ -170,6 +181,43 @@ if __name__ == "__main__":
     axis[1].axhline(y=dfMayCer.rMerCclCer.mean(), color = 'y')
     axis[1].set_title("MervalCCL/CER")
     plt.show()
+
+
+    # #
+    figure, axis = plt.subplots(2, 1)
+    axis[0].plot(dfMayCer.rGGALCer)
+    axis[0].axhline(y=dfMayCer.rGGALCer.mean(), color = 'g')
+    axis[0].set_title("GGAL USA/CER")
+    axis[1].plot(dfMayCer.rGGALBACer)
+    axis[1].axhline(y=dfMayCer.rGGALBACer.mean(), color = 'g')
+    axis[1].set_title("GGAL BA/CER")
+
+
+    plt.show()
+
+    figure, axis = plt.subplots(2, 1)
+
+    axis[0].plot(dfMayCer.rYPFCer)
+    axis[0].axhline(y=dfMayCer.rYPFCer.mean(), color = 'y')
+    axis[0].set_title("YPF USA/CER")
+
+
+    axis[1].plot(dfMayCer.rYPFBACer)
+    axis[1].axhline(y=dfMayCer.rYPFBACer.mean(), color = 'y')
+    axis[1].set_title("YPF BA/CER")
+    plt.show()
+
+    figure, axis = plt.subplots(2, 1)
+    axis[0].plot(dfMayCer.rPAMPBACer)
+    axis[0].axhline(y=dfMayCer.rPAMPBACer.mean(), color = 'g')
+    axis[0].set_title("PAMP BA/CER")
+
+    axis[1].plot(dfMayCer.rPAMPCer)
+    axis[1].axhline(y=dfMayCer.rPAMPCer.mean(), color = 'y')
+    axis[1].set_title("PAMP USA/CER")
+    plt.show()
+
+
 
     dfMepCcl = pd.merge(dfMep, dfCcl, left_index=True, right_index=True)
     figure, axis = plt.subplots(2, 1)
