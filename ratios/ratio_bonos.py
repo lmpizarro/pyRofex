@@ -46,6 +46,13 @@ class CSVS:
         df_gd = CSVS.read_bono(filename=filename_gd)
         return  df_gd
 
+    @staticmethod
+    def read_bono_ba37d():
+        filename = FORMAT_FILENAME.format('BA', '37D')
+        filename = Path(DATA_PATH) / filename
+        df = CSVS.read_bono(filename=filename)
+        return df
+
 def regressor(df_al_gd: pd.DataFrame, key='ratio'):
     x = df_al_gd.index
     y = df_al_gd[key]
@@ -130,8 +137,8 @@ def main():
     for year, df_ratio in ratios.items():
         plot_them(df_ratio)
 
-        fig = get_plotly_fig(df_ratio=df_ratio)
-        fig.show()
+        # fig = get_plotly_fig(df_ratio=df_ratio)
+        # fig.show()
 
 def mep_bono(year=29):
     df_al_D = CSVS.read_bono_al(year=year, D=True)
@@ -153,9 +160,9 @@ def mep_bono(year=29):
 
 
 if __name__ == "__main__":
-    # main()
-    year = 41
-    df_al_gd = mep_bono(year=year)
-    plt.plot(df_al_gd.mep)
-    plt.plot(df_al_gd.regres)
-    plt.show()
+    main()
+    # year = 41
+    # df_al_gd = mep_bono(year=year)
+    # plt.plot(df_al_gd.mep)
+    # plt.plot(df_al_gd.regres)
+    # plt.show()

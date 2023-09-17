@@ -146,10 +146,16 @@ if __name__ == "__main__":
     dfCcl = dolar_ccl()
     dfMep = dolar_mep()
 
-    dfLeliqCer = pd.merge(dfCER, dfLeliq, left_index=True, right_index=True)
-    dfLeliqCer["rLeliqCER"] = dfLeliqCer.leliq / dfLeliqCer.cer
+    print(dfLeliq.tail())
 
-    plt.plot(dfLeliqCer.rLeliqCER)
+    exit()
+
+    dfLeliqCer = pd.merge(dfCER, dfLeliq, left_index=True, right_index=True)
+    dfLeliqCer = pd.merge(dfLeliqCer, dfCcl, left_index=True, right_index=True)
+    dfLeliqCer["rLeliqCER"] = dfLeliqCer.leliq / dfLeliqCer.cer
+    dfLeliqCer["rLeliqCCL"] = dfLeliqCer.leliq / dfLeliqCer.ccl
+
+    plt.plot(dfLeliqCer.rLeliqCCL)
     plt.show()
 
     dfMayCer = pd.merge(dfMayorista, dfCER, left_index=True, right_index=True)
