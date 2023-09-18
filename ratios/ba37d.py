@@ -1,5 +1,6 @@
 from ratio_bonos import CSVS, change_index
-from ratios_cer import dolar_ccl, dolar_mep, variables_bcra
+from dolares import dolar_ccl, dolar_mep
+from variables_bcra import variables_bcra
 import pandas as pd
 import matplotlib.pyplot as plt
 
