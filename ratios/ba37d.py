@@ -1,4 +1,4 @@
-from ratio_bonos import CSVS, change_index
+from utils import CSVS, change_index
 from dolares import dolar_ccl, dolar_mep
 from variables_bcra import variables_bcra
 import pandas as pd
