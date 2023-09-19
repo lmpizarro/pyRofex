@@ -4,9 +4,12 @@ import json
 from datetime import datetime
 import pandas as pd
 
-from config import urls
-
 DAYS_IN_A_YEAR = 360
+
+urls = {
+    "bonos_rava": "https://www.rava.com/perfil",
+}
+
 
 def coti_hist(res):
     return pd.DataFrame(res["coti_hist"])
