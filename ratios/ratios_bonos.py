@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 
 from utils import regressor, CSVS, change_index
 
-def calc_ratio(df_gd, df_al):
+def calc_ratio_gd_al(df_gd, df_al):
     df_al_gd  = df_al.merge(df_gd, left_on='fecha', right_on='fecha', suffixes=('_al', '_gd'))
     df_al_gd['ratio'] = df_al_gd['cierre_gd'] / df_al_gd['cierre_al']
     mean_ratio = df_al_gd.ratio.mean()
@@ -31,7 +31,7 @@ def calc_ratio_bono(year=29, D=True):
     df_gd = CSVS.read_bono_gd(year=year, D=D)
     df_al = CSVS.read_bono_al(year=year, D=D)
 
-    df_al_gd = calc_ratio(df_gd=df_gd, df_al=df_al)
+    df_al_gd = calc_ratio_gd_al(df_gd=df_gd, df_al=df_al)
 
     return df_al_gd
 

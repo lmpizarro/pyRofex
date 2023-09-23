@@ -3,11 +3,13 @@ from bs4 import BeautifulSoup
 import json
 from datetime import datetime
 import pandas as pd
+from utils import change_index
 
 DAYS_IN_A_YEAR = 360
 
 urls = {
     "bonos_rava": "https://www.rava.com/perfil",
+    "cedears": "https://www.rava.com/cotizaciones/cedears",
 }
 
 
@@ -47,7 +49,18 @@ def cash_flow(flujo):
     flujo["dias_cupon"] = (flujo.fecha - today).dt.days
     flujo['years_to_coupon'] = flujo["dias_cupon"] / DAYS_IN_A_YEAR
 
+    flujo = change_index(flujo)
+
     return flujo
+
+def cash_flow_bono(bono):
+    res = scrap_bonos_rava(bono)
+
+    flujo = pd.DataFrame(res["flujofondos"]["flujofondos"])
+    flujo['ticker'] = bono
+
+    return cash_flow(flujo)
+
 
 
 def test():
@@ -62,12 +75,15 @@ def test():
     tir = res["flujofondos"]["tir"]
     duration = res["flujofondos"]["duration"]
 
-    cash_flow(flujo)
+    cf = cash_flow(flujo)
     print(res.keys())
 
     print(res["cotizaciones"][0])
 
     print(res["cuad_tecnico"])
+
+    print(cf.head(10))
+    exit()
 
 
 if __name__ == "__main__":

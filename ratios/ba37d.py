@@ -36,5 +36,11 @@ def main():
     plt.plot(df_merge.rBa37DCclCer - df_merge.rBa37DCclCer.mean(), 'k')
     plt.axhline(y=0, color = 'r')
     plt.show()
+
+    plt.plot(df_merge.rBa37DCer - df_merge.rBa37DCer.mean(), 'k')
+    plt.axhline(y=0, color = 'r')
+    plt.show()
+
+
 if __name__ == '__main__':
     main()
