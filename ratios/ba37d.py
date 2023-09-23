@@ -23,9 +23,14 @@ def main():
     print(df.tail())
     print(df_ccl.tail())
     print(df_merge.tail())
+    print('mean: ', df_merge.close_mep.mean())
+    print('close: ', df_merge.close_mep.iloc[-1])
 
-    plt.plot(df_merge.close_ccl)
+    # plt.plot(df_merge.close_ccl)
     plt.plot(df_merge.close_mep, 'k')
+    plt.axhline(y=df_merge.close_mep.mean(), color = 'y')
+    plt.axhline(y=df_merge.close_mep.mean() + df_merge.close_mep.std(), color = 'g')
+    plt.axhline(y=df_merge.close_mep.mean() - df_merge.close_mep.std(), color = 'r')
     plt.show()
 
     plt.plot(df_merge.rBa37DCclCer - df_merge.rBa37DCclCer.mean(), 'k')
