@@ -1,4 +1,4 @@
-from utils import CSVS, change_index
+from utils import CSVS, change_index, regressor
 from dolares import dolar_ccl, dolar_mep
 from variables_bcra import variables_bcra
 import pandas as pd
@@ -20,6 +20,18 @@ def main():
     df_merge['rBa37DCer'] = df_merge.cierre / df_merge.cer
     df_merge['rBa37DCclCer'] = df_merge.close_mep / df_merge.cer
 
+    from scipy import stats
+
+
+    def regress_func(key):
+        x = range(len(df_merge.index))
+        slope, intercept, _, _, _ = stats.linregress(x,
+                                                    df_merge[key])
+        return slope * x + intercept
+
+    df_merge['regress'] = regress_func('close_mep')
+
+
     print(df.tail())
     print(df_ccl.tail())
     print(df_merge.tail())
@@ -28,6 +40,7 @@ def main():
 
     # plt.plot(df_merge.close_ccl)
     plt.plot(df_merge.close_mep, 'k')
+    plt.plot(df_merge.regress)
     plt.axhline(y=df_merge.close_mep.mean(), color = 'y')
     plt.axhline(y=df_merge.close_mep.mean() + df_merge.close_mep.std(), color = 'g')
     plt.axhline(y=df_merge.close_mep.mean() - df_merge.close_mep.std(), color = 'r')

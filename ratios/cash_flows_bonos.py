@@ -1,5 +1,6 @@
 from rava import cash_flow_bono
 import matplotlib.pyplot as plt
+from flujos import transform_ba37d
 
 
 def plot_cash_flow(cf):
@@ -30,5 +31,6 @@ if __name__ == '__main__':
         flujo = cash_flow_bono(b)
         # plot_cash_flow(flujo[:14])
         flujos[b] = flujo[:14]
+    flujos['ba37d'] = transform_ba37d()[:14]
     plot_cash_flow_all(flujos=flujos)
 

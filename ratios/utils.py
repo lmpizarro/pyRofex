@@ -5,10 +5,10 @@ import pandas as pd
 FORMAT_FILENAME = "{0}{1} - Cotizaciones historicas.csv"
 DATA_PATH = "datos"
 
-def change_index(df_bono: pd.DataFrame) -> pd.DataFrame:
-    df_bono["Fecha"] = pd.to_datetime(df_bono["fecha"], format="%Y-%m-%d").dt.date
+def change_index(df_bono: pd.DataFrame, key='fecha') -> pd.DataFrame:
+    df_bono["Fecha"] = pd.to_datetime(df_bono[key], format="%Y-%m-%d").dt.date
     df_bono.set_index("Fecha", inplace=True)
-    df_bono.drop(['fecha'], axis=1)
+    df_bono.drop([key], axis=1, inplace=True)
     return df_bono
 
 class CSVS:

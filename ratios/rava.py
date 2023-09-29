@@ -10,7 +10,33 @@ DAYS_IN_A_YEAR = 360
 urls = {
     "bonos_rava": "https://www.rava.com/perfil",
     "cedears": "https://www.rava.com/cotizaciones/cedears",
+    "dolar" : 'https://www.rava.com/cotizaciones/dolares'
 }
+
+def dolar_mep_hoy():
+    url = urls['dolar']
+    req = requests.get(url)
+    soup = BeautifulSoup(req.content, 'html.parser')
+    table = soup.find(name='dolares-p')
+    body = json.loads(table.attrs[":datos"])["body"]
+
+    dolares = []
+    for e in body:
+        if 'DOLAR MEP' in e['especie']:
+            dolares.append(float(e['ultimo']))
+    dolar = sum(dolares) / len(dolares)
+
+    return dolar
+
+
+def ultima_coti_bono_mep(bono='ba37d'):
+    ''' devuelve la ultima cotizacion de un bono en pesos expresado en dolar'''
+    url = f'https://www.rava.com/perfil/{bono}'
+    req = requests.get(url)
+    soup = BeautifulSoup(req.content, 'html.parser')
+
+    table = soup.find("main").find("perfil-p")
+    return float(json.loads(table.attrs[':res'])['cuad_tecnico'][0]['ultimonum']) / dolar_mep_hoy()
 
 
 def coti_hist(res):
@@ -56,8 +82,12 @@ def cash_flow(flujo):
 def cash_flow_bono(bono):
     res = scrap_bonos_rava(bono)
 
+
     flujo = pd.DataFrame(res["flujofondos"]["flujofondos"])
     flujo['ticker'] = bono
+
+    print('bono ', bono)
+    print(flujo.head())
 
     return cash_flow(flujo)
 
