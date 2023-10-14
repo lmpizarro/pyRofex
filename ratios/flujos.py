@@ -7,6 +7,12 @@ from datetime import datetime, timedelta
 from rava import ultima_coti_bono_mep
 
 from dataclasses import dataclass
+import numpy as np
+from scipy import optimize
+
+def npv(x, df, price):
+
+    return price - (df['TOTAL'] / np.power(1 +x/2,df['yts'])).sum()
 
 keys = ['FECHA', 'SALDO', 'CUPÓN', 'AMORTIZACIÓN', 'TOTAL']
 def flujo_ba37d():
@@ -27,10 +33,20 @@ def flujo_ba37d():
 
     ult_precio = ultima_coti_bono_mep()
     data = {'SALDO': 0, 'CUPÓN': -ult_precio, 'AMORTIZACIÓN': 0, 'TOTAL': -ult_precio, 'ticker': 'BA37D'}
-    df = pd.concat([pd.DataFrame(data=data, index=[buy_date+timedelta(days=2)]), df])
+    liq_date = buy_date+timedelta(days=2)
+    df = pd.concat([pd.DataFrame(data=data, index=[liq_date]), df])
     df = df[['ticker']+keys]
     df['acumulado'] = df.TOTAL.cumsum()
-    print(ult_precio)
+    df['liq_date'] = liq_date
+    df['yts'] = (df.FECHA-df.liq_date).astype('timedelta64[D]') / 360
+    df.drop(columns=['liq_date'], inplace=True)
+    print(df[df['acumulado'] > 0].head(1))
+
+    print(-ult_precio)
+
+    sol1 = optimize.root_scalar(npv, x0=0.2,  x1= .6, args=(df, ult_precio), method='secant')
+    sol = optimize.fsolve(npv, x0=0.2, args=(df, ult_precio))
+    print('tir ', sol, sol1.root)
     return df
 
 
@@ -60,22 +76,29 @@ def flujo_bono_soberano(year):
     df_flujo["FECHA"] = pd.to_datetime(df_flujo["FECHA"], format="%Y/%m/%d").dt.date
     ult_precio = -float(soup[0].iloc[1]['Valor'])
     buy_date =datetime.now().date()
-    line = dict(zip(keys, [buy_date+timedelta(days=2), 0, ult_precio, 0, ult_precio] ))
+    liq_date = buy_date+timedelta(days=2)
+    line = dict(zip(keys, [liq_date, 0, ult_precio, 0, ult_precio] ))
     line_df = pd.DataFrame.from_records([line])
     df_flujo = pd.concat([line_df, df_flujo])
     df_flujo["ticker"] = ticker_for_query
     df_flujo = df_flujo[['ticker']+ keys]
     df_flujo['acumulado'] = df_flujo['TOTAL'].cumsum()
 
+
+    df_flujo['liq_date'] = liq_date
+    df_flujo['yts'] = (df_flujo.FECHA-df_flujo.liq_date).astype('timedelta64[D]') / 360
+
+    df_flujo.drop(columns=['liq_date'], inplace=True)
     print(df_flujo[df_flujo['acumulado'] > 0].head(1))
     print(ult_precio)
-
+    sol = optimize.root_scalar(npv, x0=0.01,  x1= .6, args=(df_flujo, -ult_precio), method='secant')
+    print('tir ', sol.root)
     return df_flujo
 
 def main():
     years =[29, 30, 35, 38, 41, 46]
     df_flujo = flujo_ba37d()
-    print(df_flujo[df_flujo['acumulado'] > 0].head(1))
+
     flujos = df_flujo
     for year in years:
 
