@@ -15,10 +15,12 @@ def npv(x, df, price):
     return price - (df['TOTAL'] / np.power(1 +x/2,df['yts'])).sum()
 
 keys = ['FECHA', 'SALDO', 'CUPÓN', 'AMORTIZACIÓN', 'TOTAL']
-def flujo_ba37d():
+
+def transform_ba37d():
     df = pd.read_csv('datos/flujoFondos_BA37D.csv')
     df = df[['Fecha de pago', 'Renta', 'Amortización', 'R+A']]
     df = df.rename({'Fecha de pago': 'FECHA', 'Renta': 'CUPÓN', 'Amortización': 'AMORTIZACIÓN', 'R+A': 'TOTAL'}, axis=1)
+
 
     df["acumulado"] = df.TOTAL.cumsum()
     total = df.TOTAL.sum()
@@ -27,26 +29,26 @@ def flujo_ba37d():
     df = df[keys]
     df['ticker'] = 'BA37D'
 
+    return df
+
+def flujo_ba37d():
+    df = transform_ba37d()
     buy_date = datetime.now().date()
     # df = change_index(df, key='FECHA')
     df = df[df.FECHA > buy_date]
 
     ult_precio = ultima_coti_bono_mep()
-    data = {'SALDO': 0, 'CUPÓN': -ult_precio, 'AMORTIZACIÓN': 0, 'TOTAL': -ult_precio, 'ticker': 'BA37D'}
+
     liq_date = buy_date+timedelta(days=2)
-    df = pd.concat([pd.DataFrame(data=data, index=[liq_date]), df])
+    data = {'SALDO': 0, 'CUPÓN': -ult_precio, 'AMORTIZACIÓN': 0, 'TOTAL': -ult_precio, 'ticker': 'BA37D', 'FECHA': liq_date}
+    df = pd.concat([pd.DataFrame.from_records([data]), df])
+
     df = df[['ticker']+keys]
     df['acumulado'] = df.TOTAL.cumsum()
     df['liq_date'] = liq_date
     df['yts'] = (df.FECHA-df.liq_date).astype('timedelta64[D]') / 360
     df.drop(columns=['liq_date'], inplace=True)
-    print(df[df['acumulado'] > 0].head(1))
 
-    print(-ult_precio)
-
-    sol1 = optimize.root_scalar(npv, x0=0.2,  x1= .6, args=(df, ult_precio), method='secant')
-    sol = optimize.fsolve(npv, x0=0.2, args=(df, ult_precio))
-    print('tir ', sol, sol1.root)
     return df
 
 
@@ -74,10 +76,10 @@ def flujo_bono_soberano(year):
     soup = pd.read_html(url)
     df_flujo = soup[3]
     df_flujo["FECHA"] = pd.to_datetime(df_flujo["FECHA"], format="%Y/%m/%d").dt.date
-    ult_precio = -float(soup[0].iloc[1]['Valor'])
+    ult_precio = float(soup[0].iloc[1]['Valor'])
     buy_date =datetime.now().date()
     liq_date = buy_date+timedelta(days=2)
-    line = dict(zip(keys, [liq_date, 0, ult_precio, 0, ult_precio] ))
+    line = dict(zip(keys, [liq_date, 0, -ult_precio, 0, -ult_precio] ))
     line_df = pd.DataFrame.from_records([line])
     df_flujo = pd.concat([line_df, df_flujo])
     df_flujo["ticker"] = ticker_for_query
@@ -89,24 +91,51 @@ def flujo_bono_soberano(year):
     df_flujo['yts'] = (df_flujo.FECHA-df_flujo.liq_date).astype('timedelta64[D]') / 360
 
     df_flujo.drop(columns=['liq_date'], inplace=True)
-    print(df_flujo[df_flujo['acumulado'] > 0].head(1))
-    print(ult_precio)
-    sol = optimize.root_scalar(npv, x0=0.01,  x1= .6, args=(df_flujo, -ult_precio), method='secant')
-    print('tir ', sol.root)
+
+
     return df_flujo
 
+def get_datos(df_flujo):
+    datos = {}
+
+    break_even_nominal = df_flujo[df_flujo['acumulado'] > 0].head(1)[['FECHA', 'yts']].iloc[0]
+    ult_precio = - df_flujo['acumulado'].iloc[0]
+    datos['TICKER'] = df_flujo.iloc[0].ticker
+    # datos['FECHA'] = break_even_nominal['FECHA']
+    datos['ytoBe'] = break_even_nominal['yts']
+    datos['precio'] = ult_precio
+    datos['flujoTotal'] = df_flujo['acumulado'].iloc[-1] + ult_precio
+    sol = optimize.root_scalar(npv, x0=0.01,  x1= .6, args=(df_flujo, ult_precio), method='secant')
+    datos['tir'] = sol.root
+    datos['flujo_neto'] = datos['flujo_total'] - ult_precio
+    datos['CUPONES'] = df_flujo['CUPÓN'].iloc[1:].sum()
+    datos['AMORT'] = df_flujo['AMORTIZACIÓN'].iloc[1:].sum()
+    datos['MATURITY'] = (df_flujo['FECHA'].iloc[-1] - df_flujo['FECHA'].iloc[0]).days / 365
+    datos['cuponYear'] = datos['CUPONES'] / datos['MATURITY']
+    datos['amortYear'] = datos['AMORT'] / datos['MATURITY']
+    datos['totalYear'] = datos['cuponYear'] + datos['amortYear']
+    datos['totalYearPrecio'] = datos['totalYear'] / datos['precio']
+    return datos
+
+
 def main():
+    reduction = []
     years =[29, 30, 35, 38, 41, 46]
     df_flujo = flujo_ba37d()
-
+    datos = get_datos(df_flujo=df_flujo)
+    reduction.append(datos)
     flujos = df_flujo
     for year in years:
 
         df_flujo = flujo_bono_soberano(year=year)
+
+        datos = get_datos(df_flujo=df_flujo)
         flujos = pd.concat([flujos, df_flujo])
+        reduction.append(datos)
 
     # print(flujos.head())
-
+    reduction = pd.DataFrame.from_records(reduction)
+    print(reduction)
     agg = flujos[['FECHA', 'TOTAL']].groupby('FECHA').agg('sum')
 
     # print(agg.head(50))
