@@ -102,12 +102,12 @@ def get_datos(df_flujo):
     ult_precio = - df_flujo['acumulado'].iloc[0]
     datos['TICKER'] = df_flujo.iloc[0].ticker
     # datos['FECHA'] = break_even_nominal['FECHA']
-    datos['ytoBe'] = break_even_nominal['yts']
-    datos['precio'] = ult_precio
+    datos['ytoBe'] = round(break_even_nominal['yts'], 2)
+    datos['precio'] = round(ult_precio, 2)
     datos['flujoTotal'] = df_flujo['acumulado'].iloc[-1] + ult_precio
     sol = optimize.root_scalar(npv, x0=0.01,  x1= .6, args=(df_flujo, ult_precio), method='secant')
-    datos['tir'] = sol.root
-    datos['flujo_neto'] = datos['flujo_total'] - ult_precio
+    datos['tir'] = round(100*sol.root, 2)
+    datos['flujoNeto'] = datos['flujoTotal'] - ult_precio
     datos['CUPONES'] = df_flujo['CUPÓN'].iloc[1:].sum()
     datos['AMORT'] = df_flujo['AMORTIZACIÓN'].iloc[1:].sum()
     datos['MATURITY'] = (df_flujo['FECHA'].iloc[-1] - df_flujo['FECHA'].iloc[0]).days / 365
