@@ -10,9 +10,13 @@ from dataclasses import dataclass
 import numpy as np
 from scipy import optimize
 
+def bond_price(tir: float, df):
+    return (df['TOTAL'] / np.power(1 +tir/2,df['yts'])).sum()
+
 def npv(x, df, price):
 
-    return price - (df['TOTAL'] / np.power(1 +x/2,df['yts'])).sum()
+    return price - bond_price(x, df)
+
 
 keys = ['FECHA', 'SALDO', 'CUPÓN', 'AMORTIZACIÓN', 'TOTAL']
 
@@ -34,7 +38,6 @@ def transform_ba37d():
 def flujo_ba37d():
     df = transform_ba37d()
     buy_date = datetime.now().date()
-    # df = change_index(df, key='FECHA')
     df = df[df.FECHA > buy_date]
 
     ult_precio = ultima_coti_bono_mep()
@@ -95,18 +98,26 @@ def flujo_bono_soberano(year):
 
     return df_flujo
 
+def get_ult_precio(df_flujo):
+    return  - df_flujo['acumulado'].iloc[0]
+
+def get_ticker(df_flujo):
+    return df_flujo.iloc[0].ticker
+
+def get_tir(df_flujo, price):
+    tir_solver  = optimize.root_scalar(npv, x0=0.01,  x1= .6, args=(df_flujo, price), method='secant')
+    return tir_solver.root
+
 def get_datos(df_flujo):
     datos = {}
-
     break_even_nominal = df_flujo[df_flujo['acumulado'] > 0].head(1)[['FECHA', 'yts']].iloc[0]
-    ult_precio = - df_flujo['acumulado'].iloc[0]
-    datos['TICKER'] = df_flujo.iloc[0].ticker
+    ult_precio =  get_ult_precio(df_flujo)
+    datos['TICKER'] = get_ticker(df_flujo)
     # datos['FECHA'] = break_even_nominal['FECHA']
-    datos['ytoBe'] = round(break_even_nominal['yts'], 2)
-    datos['precio'] = round(ult_precio, 2)
+    datos['ytoBe'] = break_even_nominal['yts']
+    datos['precio'] = ult_precio
     datos['flujoTotal'] = df_flujo['acumulado'].iloc[-1] + ult_precio
-    sol = optimize.root_scalar(npv, x0=0.01,  x1= .6, args=(df_flujo, ult_precio), method='secant')
-    datos['tir'] = round(100*sol.root, 2)
+    datos['tir'] = get_tir(df_flujo=df_flujo, price=ult_precio)
     datos['flujoNeto'] = datos['flujoTotal'] - ult_precio
     datos['CUPONES'] = df_flujo['CUPÓN'].iloc[1:].sum()
     datos['AMORT'] = df_flujo['AMORTIZACIÓN'].iloc[1:].sum()
@@ -115,14 +126,57 @@ def get_datos(df_flujo):
     datos['amortYear'] = datos['AMORT'] / datos['MATURITY']
     datos['totalYear'] = datos['cuponYear'] + datos['amortYear']
     datos['totalYearPrecio'] = datos['totalYear'] / datos['precio']
+
     return datos
+
+def tir_calcs(df_flujo):
+    tir_data = {}
+    ult_precio = get_ult_precio(df_flujo)
+
+    tir0 = get_tir(df_flujo=df_flujo, price=ult_precio)
+    tir_data['TICKER'] = get_ticker(df_flujo=df_flujo)
+
+    tir_data['1.5Tir'] = 1.5 * tir0
+    tir_data['1.25Tir'] = 1.25 * tir0
+    tir_data['tir'] = tir0
+    tir_data['.75Tir'] = .75 * tir0
+    tir_data['halfTir'] = tir0 / 2
+
+    tir_data['price1.5tir'] = bond_price(tir0*1.5, df_flujo)
+    tir_data['price1.25tir'] = bond_price(tir0*1.25, df_flujo)
+    tir_data['price'] = ult_precio
+    tir_data['price.75tir'] = bond_price(tir0*.75, df_flujo)
+    tir_data['priceHalftir'] = bond_price(tir0/2, df_flujo)
+
+    tir_data['pct1.5tir'] = bond_price(tir0*1.5, df_flujo) / tir_data['price']  - 1
+    tir_data['pct1.25tir'] = bond_price(tir0*1.25, df_flujo) / tir_data['price']  - 1
+    tir_data['pct.75tir'] = bond_price(tir0*.75, df_flujo) / tir_data['price']  - 1
+    tir_data['pctHalftir'] = bond_price(tir0/2, df_flujo) / tir_data['price']  - 1
+
+
+    tir_price1 = get_tir(df_flujo=df_flujo, price=ult_precio*1.01)
+    tir_price0 = get_tir(df_flujo=df_flujo, price=ult_precio)
+    deltaTir = tir_price1 - tir_price0
+    sensTirToPrice = 100 * deltaTir / tir0
+    tir_data['sensTirToPrice'] = sensTirToPrice
+
+    tir1 = tir0 * 1.01
+    p1 = bond_price(tir=tir1, df=df_flujo)
+    p0 = bond_price(tir=tir0, df=df_flujo)
+    sensPriceToTir = (p1 - p0) / ult_precio
+    tir_data['sensPriceToTir'] = 100 * sensPriceToTir
+
+    return tir_data
 
 
 def main():
     reduction = []
+    tirs = []
     years =[29, 30, 35, 38, 41, 46]
     df_flujo = flujo_ba37d()
     datos = get_datos(df_flujo=df_flujo)
+    tir = tir_calcs(df_flujo=df_flujo)
+    tirs.append(tir)
     reduction.append(datos)
     flujos = df_flujo
     for year in years:
@@ -133,9 +187,15 @@ def main():
         flujos = pd.concat([flujos, df_flujo])
         reduction.append(datos)
 
+        tir = tir_calcs(df_flujo=df_flujo)
+        tirs.append(tir)
+
+
     # print(flujos.head())
     reduction = pd.DataFrame.from_records(reduction)
-    print(reduction)
+    reduction.to_excel('/home/lmpizarro/devel/project/financeExperiments/pyRofex/ratios/reduction.xlsx')
+    tirs = pd.DataFrame.from_records(tirs)
+    tirs.to_excel('/home/lmpizarro/devel/project/financeExperiments/pyRofex/ratios/tirs.xlsx')
     agg = flujos[['FECHA', 'TOTAL']].groupby('FECHA').agg('sum')
 
     # print(agg.head(50))
@@ -146,9 +206,26 @@ def main():
     plt.show()
 
 
-# df = transform_ba37d()
+def tir_price_curves():
+    df_flujo = flujo_ba37d()
 
-# print(df.head(14))
+    tirs = range(10, 80, 5)
+
+    prices = [bond_price(tir/100, df_flujo) for tir in tirs]
+
+
+    plt.plot(tirs, prices, label='ba37d')
+
+    years =[29, 30, 35, 38, 41, 46]
+    for year in years:
+
+        df_flujo = flujo_bono_soberano(year=year)
+        prices = [bond_price(tir/100, df_flujo) for tir in tirs]
+
+
+        plt.plot(tirs, prices, label=year)
+        plt.legend()
+    plt.show()
 
 if __name__ == '__main__':
     main()
