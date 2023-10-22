@@ -29,8 +29,10 @@ if __name__ == '__main__':
 
     for b in ['al29', 'al30', 'al35', 'ae38', 'al41', 'gd46']:
         flujo = cash_flow_bono(b)
-        # plot_cash_flow(flujo[:14])
         flujos[b] = flujo[:14]
+
     flujos['ba37d'] = flujo_ba37d()[:14]
+    flujos['ba37d'].set_index('FECHA', inplace=True)
+
     plot_cash_flow_all(flujos=flujos)
 

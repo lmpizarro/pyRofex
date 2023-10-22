@@ -67,8 +67,9 @@ def scrap_cedear_rava():
 def cash_flow(flujo):
     today = datetime.now()
     flujo.fillna(0, inplace=True)
+
     flujo["fecha"] = pd.to_datetime(flujo["fecha"], format="%Y-%m-%d")
-    flujo["acumulado"] = flujo.cupon.cumsum()
+    flujo["acumulado"] = flujo.cupon.cumsum() + flujo.amortizacion.cumsum()
     flujo_inicial = -flujo.acumulado.iloc[0]
     flujo["cupon_precio"] = flujo.cupon / flujo_inicial
     flujo["acumu_precio"] = flujo.acumulado / flujo_inicial
@@ -86,8 +87,6 @@ def cash_flow_bono(bono):
     flujo = pd.DataFrame(res["flujofondos"]["flujofondos"])
     flujo['ticker'] = bono
 
-    print('bono ', bono)
-    print(flujo.head())
 
     return cash_flow(flujo)
 
