@@ -51,7 +51,6 @@ def flujo_ba37d():
     df['liq_date'] = liq_date
     df['yts'] = (df.FECHA-df.liq_date).astype('timedelta64[D]') / 360
     df.drop(columns=['liq_date'], inplace=True)
-
     return df
 
 
@@ -144,14 +143,14 @@ def tir_calcs(df_flujo):
 
     tir_data['price1.5tir'] = bond_price(tir0*1.5, df_flujo)
     tir_data['price1.25tir'] = bond_price(tir0*1.25, df_flujo)
-    tir_data['price'] = ult_precio
+    tir_data['priceTir'] = ult_precio
     tir_data['price.75tir'] = bond_price(tir0*.75, df_flujo)
     tir_data['priceHalftir'] = bond_price(tir0/2, df_flujo)
 
-    tir_data['pct1.5tir'] = bond_price(tir0*1.5, df_flujo) / tir_data['price']  - 1
-    tir_data['pct1.25tir'] = bond_price(tir0*1.25, df_flujo) / tir_data['price']  - 1
-    tir_data['pct.75tir'] = bond_price(tir0*.75, df_flujo) / tir_data['price']  - 1
-    tir_data['pctHalftir'] = bond_price(tir0/2, df_flujo) / tir_data['price']  - 1
+    tir_data['pct1.5tir'] = bond_price(tir0*1.5, df_flujo) / tir_data['priceTir']  - 1
+    tir_data['pct1.25tir'] = bond_price(tir0*1.25, df_flujo) / tir_data['priceTir']  - 1
+    tir_data['pct.75tir'] = bond_price(tir0*.75, df_flujo) / tir_data['priceTir']  - 1
+    tir_data['pctHalftir'] = bond_price(tir0/2, df_flujo) / tir_data['priceTir']  - 1
 
 
     tir_price1 = get_tir(df_flujo=df_flujo, price=ult_precio*1.01)
@@ -196,6 +195,8 @@ def main():
     reduction.to_excel('/home/lmpizarro/devel/project/financeExperiments/pyRofex/ratios/reduction.xlsx')
     tirs = pd.DataFrame.from_records(tirs)
     tirs.to_excel('/home/lmpizarro/devel/project/financeExperiments/pyRofex/ratios/tirs.xlsx')
+    tirs.set_index('TICKER', inplace=True)
+
     agg = flujos[['FECHA', 'TOTAL']].groupby('FECHA').agg('sum')
 
     # print(agg.head(50))
