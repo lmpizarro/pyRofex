@@ -23,6 +23,7 @@ def filterNum(string):
     return ''.join([s for s in string if s in '9678543210.'])
 
 def bonistas(bono):
+    url = f"https://bonistas.com/bonos-argentinos/{bono}"
     soup = pd.read_html(url)
     df_flujo = soup[3]
     df_flujo["FECHA"] = pd.to_datetime(df_flujo["FECHA"], format="%Y/%m/%d").dt.date
@@ -42,26 +43,30 @@ def bonistas(bono):
         soup[0].iloc[1]['Descripción']: float(filterNum(soup[0].iloc[1].Valor)),
         # soup[0].iloc[2]['Descripción']: filterNum(soup[0].iloc[2].Valor),
         soup[0].iloc[3]['Descripción']: float(filterNum(soup[0].iloc[3].Valor)),
-        soup[0].iloc[4]['Descripción']: float(filterNum(soup[0].iloc[4].Valor)),
+        'VT': float(filterNum(soup[0].iloc[4].Valor)),
         soup[0].iloc[5]['Descripción']: float(filterNum(soup[0].iloc[5].Valor)),
         soup[0].iloc[6]['Descripción']: float(filterNum(soup[0].iloc[6].Valor)),
-        soup[1].iloc[0]['Métricas']: float(filterNum(soup[1].iloc[0].Valor)),
+        'TIR Obj': float(filterNum(soup[1].iloc[0].Valor)),
         soup[1].iloc[1]['Métricas']: float(filterNum(soup[1].iloc[1].Valor)),
-        soup[1].iloc[2]['Métricas']: float(filterNum(soup[1].iloc[2].Valor)),
+        'TIR Prom': float(filterNum(soup[1].iloc[2].Valor)),
         soup[1].iloc[3]['Métricas']: float(filterNum(soup[1].iloc[3].Valor)),
         soup[1].iloc[4]['Métricas']: float(filterNum(soup[1].iloc[4].Valor)),
+        'dQ': (df_flujo.index[1] - df_flujo.index[0]).days,
+        'pQ': df_flujo.iloc[1]['CUPÓN'],
+        'Q/P': -df_flujo.iloc[1]['CUPÓN'] / df_flujo.iloc[0]['CUPÓN'],
+        'MAT': (df_flujo.index[-1] - df_flujo.index[0]).days/365,
            }
-
+    datos['MD/MAT'] = datos['MD'] / datos['MAT']
+    datos['TIR/Prom'] = (datos['TIR'] - datos['TIR Prom']) / datos['TIR Prom']
     return df_flujo, datos
 
 
 
-if __name__ == '__main__':
+def main():
     flujos = {}
     datos_adicionales = []
-    for bono in ['DIP0', 'CUAP', 'PAP0', 'PARP', 'DICP']:
+    for bono in ['DIP0', 'DICP', 'PAP0', 'PARP', 'CUAP']:
 
-        url = f"https://bonistas.com/bonos-argentinos/{bono}"
 
         df, other_datos = bonistas(bono)
         datos_adicionales.append(other_datos)
@@ -75,6 +80,8 @@ if __name__ == '__main__':
 
     df_datos = pd.DataFrame.from_records(datos_adicionales)
 
-    print(df_datos)
+    df_datos.to_csv('datos.csv')
 
 
+if __name__ == '__main__':
+    main()
