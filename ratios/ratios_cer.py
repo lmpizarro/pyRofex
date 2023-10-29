@@ -140,7 +140,8 @@ def main():
     plt.show()
 
 def rofex_tickers(start="2015-01-01"):
-    tickers = ["YPFD.BA", "GGAL.BA", "TXAR.BA", "PAMP.BA", "ALUA.BA", "CEPU.BA", "TGSU2.BA", ]
+    tickers = ["YPFD.BA", "GGAL.BA", "TX", "PAMP.BA", "ALUA.BA", "CEPU.BA", "TGSU2.BA", ]
+
     df_close = yf.download(tickers, start=start, auto_adjust=True)["Close"]
 
     return df_close
@@ -149,7 +150,13 @@ def rofex_tickers(start="2015-01-01"):
 def rofex_cer():
     df_rofex = rofex_tickers()
     dfCER = variables_bcra(tipo="cer", desde="2015-01-01")
+    dfCcl = dolar_ccl()
+    dfCcl = dfCcl[['ccl']]
     dfRfxCer = pd.merge(dfCER, df_rofex, left_index=True, right_index=True)
+    dfRfxCer = pd.merge(dfRfxCer, dfCcl, left_index=True, right_index=True)
+
+
+    dfRfxCer['TXAR.BA'] = dfRfxCer['TX'] * dfRfxCer['ccl']
 
     dfRfxCer = dfRfxCer.truncate(before="2019-12-30")
     for k in dfRfxCer.keys():
@@ -159,8 +166,8 @@ def rofex_cer():
 
     for k in dfRfxCer.keys():
         if "BA.cer" in k:
-            plt.plot(dfRfxCer[k], label=k)
-            plt.axhline(dfRfxCer[k].mean())
+            plt.plot(dfRfxCer[k] / dfRfxCer[k].mean(), label=k)
+            plt.axhline(1)
             plt.legend()
             plt.show()
 
