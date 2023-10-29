@@ -28,7 +28,7 @@ def indice_merval(start="2015-01-01"):  # to be deleted
 
 
 
-if __name__ == "__main__":
+def main():
     dfLeliq = variables_bcra(tipo="leliq", desde="2015-01-01")
     dfCER = variables_bcra(tipo="cer", desde="2015-01-01")
     dfMayorista = variables_bcra(tipo="mayorista", desde="2015-01-01")
@@ -126,8 +126,6 @@ if __name__ == "__main__":
     axis[1].set_title("PAMP USA/CER")
     plt.show()
 
-
-
     dfMepCcl = pd.merge(dfMep, dfCcl, left_index=True, right_index=True)
     figure, axis = plt.subplots(2, 1)
     axis[0].plot(dfMepCcl.mep)
@@ -141,3 +139,30 @@ if __name__ == "__main__":
     axis[1].set_title(" CCL / MEP")
     plt.show()
 
+def rofex_tickers(start="2015-01-01"):
+    tickers = ["YPFD.BA", "GGAL.BA", "TXAR.BA", "PAMP.BA", "ALUA.BA", "CEPU.BA", "TGSU2.BA", ]
+    df_close = yf.download(tickers, start=start, auto_adjust=True)["Close"]
+
+    return df_close
+
+
+def rofex_cer():
+    df_rofex = rofex_tickers()
+    dfCER = variables_bcra(tipo="cer", desde="2015-01-01")
+    dfRfxCer = pd.merge(dfCER, df_rofex, left_index=True, right_index=True)
+
+    dfRfxCer = dfRfxCer.truncate(before="2019-12-30")
+    for k in dfRfxCer.keys():
+        if "BA" in k:
+            dfRfxCer[f"{k}.cer"] = dfRfxCer[k] / dfRfxCer['cer']
+
+
+    for k in dfRfxCer.keys():
+        if "BA.cer" in k:
+            plt.plot(dfRfxCer[k], label=k)
+            plt.axhline(dfRfxCer[k].mean())
+            plt.legend()
+            plt.show()
+
+if __name__ == "__main__":
+    rofex_cer()
