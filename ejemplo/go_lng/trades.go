@@ -133,7 +133,7 @@ func (describe *StatAttr) DescribeRepr() string {
 		describe.Mode)
 }
 
-func HistoricStat(trades []Trade,period Period) HistStatAttr {
+func HistoricStat(trades []Trade, period Period) HistStatAttr {
 	var histStat HistStatAttr
 	descPrices, descSizes, vprices := ReduceTrades(trades)
 

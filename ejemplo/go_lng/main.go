@@ -7,7 +7,7 @@ import (
 
 
 func main() {
-	dlrs := [6]Ticker{{"DLR/AGO23"}, {"DLR/SEP23"}, {"DLR/OCT23"},
+	dlrs := [6]Ticker{{"DLR/FEB24"}, {"DLR/MAR24"}, {"DLR/ABR24"},
 					    {"DLR/NOV23"}, {"DLR/DIC23"}, {"DLR/ENE24"}}
 	token := Login()
 
@@ -15,8 +15,8 @@ func main() {
 
 		mapTickerOrderBook := orderBook(ticker.Name, token)
 
-		for k, v := range mapTickerOrderBook {
-			fmt.Println(k)
+		for ticker, v := range mapTickerOrderBook {
+			fmt.Println("ticker ", ticker)
 			fmt.Println(v.OrderBookRepr())
 		}
 
@@ -27,12 +27,12 @@ func main() {
 
 		trades := GetHistoricData(ticker.Name, token, period)
 
-
+		fmt.Println("ticker ", ticker.Name, "real period FROM ", period.From, "TO ", period.To)
 		histStat := HistoricStat(trades, period)
 
-		fmt.Println(histStat.Period, histStat.StatPrices.Mean)
+		fmt.Println("Period ", histStat.Period.From, "Mean ", histStat.StatPrices.Mean)
 		for _, e := range histStat.StatDailies {
-			fmt.Println(e.Period, e.StatPrices.Mean)
+			fmt.Println(e.Period.From, e.StatPrices.Mean)
 		}
 	}
 }
