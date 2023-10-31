@@ -72,7 +72,7 @@ def main():
         aggregate = rfx_md.hist_agg(history=history[ticker])
 
     my_order = CreateOrder.buy_stock_limit(
-        symbol=local_config.rofex_ggal_ago23, units=100, price=bid_ask[0] + 10, date_time=now_time())
+        symbol=local_config.rofex_ticker, units=100, price=bid_ask[0] + 10, date_time=now_time())
 
     # order_status = rfx_operations.buy(order=my_order)
 

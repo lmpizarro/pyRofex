@@ -42,9 +42,12 @@ class TickerListIterator:
 
 def main():
     rofex_ticker_list = [
-                        Ticker(name='GGAL/JUL23', cash_asigned=10_000),
-                         Ticker(name='GGAL/SEP23', cash_asigned=10_000),
-                         Ticker(name='GGAL/AGO23', cash_asigned=10_000),
+        Ticker(name='DLR/NOV23', cash_asigned=10_000),
+        Ticker(name='DLR/DIC23', cash_asigned=10_000),
+        Ticker(name='DLR/ENE24', cash_asigned=10_000),
+        Ticker(name='DLR/FEB24', cash_asigned=10_000),
+        Ticker(name='DLR/MAR24', cash_asigned=10_000),
+        Ticker(name='DLR/ABR24', cash_asigned=10_000),
                          ]
 
     tickers = TickerList(rofex_ticker_list)
