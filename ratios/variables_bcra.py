@@ -1,5 +1,5 @@
 import pandas as pd
-from datetime import datetime
+from datetime import datetime, timedelta
 import requests
 
 settings = {
@@ -16,6 +16,10 @@ settings = {
         "Serie": "272",
         "Detalle": "Tipo de Cambio Mayorista ($ por US$) Comunicación A 3500 - Referencia",
     },
+    "minorista": {
+        "Serie": "7927",
+        "Detalle": "Tipo de Cambio Minorista ($ por US$) Comunicación B 9791"
+    },
     "TEAPF": {
         "Serie": "7939",
         "Detalle": "Tasa mínima para plazos fijos de personas humanas hasta $10 millones (en  e.a. para depósitos a 30 días)",
@@ -29,8 +33,8 @@ settings = {
         "Serie": "246",
         "Detalle": "Reservas Internacionales del BCRA (en millones de dólares - cifras provisorias sujetas a cambio de valuación)",
     },
-    "inflacion": {"Serie": "7931",
-                  "Detalle":"Inflación mensual (variación en )"},
+    "uva": {"Serie": "7913",
+                  "Detalle":"Unidad de Valor Adquisitivo (UVA) (en pesos -con dos decimales-, base 31.3.2016=14.05)"},
     "leliq":{"Serie": "7926",
              "Detalle": "LELIQ saldos (en millones de pesos)"}
 
@@ -74,3 +78,24 @@ def variables_bcra(tipo="cer", desde="2016-04-01", hasta=None):
 
     return df_cer
 
+if __name__ == "__main__":
+    df_cer = variables_bcra()
+    df_infla = variables_bcra(tipo='inflacion', desde='2010-06-30')
+    df_minorista = variables_bcra(tipo="minorista", desde='2010-01-31')
+    new_row ={"inflacion": 12.4}
+    new_df = pd.DataFrame.from_records([new_row], index=[datetime.now().date()])
+    df_infla = pd.concat([df_infla, new_df])
+    new_df = pd.DataFrame.from_records([{"inflacion": 0.0}], index=[df_infla.index[0]- timedelta(days=30)])
+    df_infla = pd.concat([new_df, df_infla])
+    # df_infla = pd.merge(df_infla, df_minorista, left_index=True, right_index=True)
+
+    df_infla['inflacion'] = 1 + df_infla['inflacion'] / 100
+    df_infla['acumulada'] = df_infla['inflacion'].cumprod()
+    print(df_infla.head())
+
+
+    print(df_infla.tail())
+    print()
+
+
+    print(df_minorista.iloc[-1].minorista/df_minorista.iloc[0].minorista)
