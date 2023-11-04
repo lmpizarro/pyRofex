@@ -35,7 +35,7 @@ def main():
     dfCcl = dolar_ccl()
     dfMep = dolar_mep()
 
-    print(dfLeliq.tail())
+    print(dfMep.tail())
 
 
     dfLeliqCer = pd.merge(dfCER, dfLeliq, left_index=True, right_index=True)
@@ -167,9 +167,11 @@ def rofex_cer():
     for k in dfRfxCer.keys():
         if "BA.cer" in k:
             plt.plot(dfRfxCer[k] / dfRfxCer[k].mean(), label=k)
+            plt.plot((dfRfxCer[k] / dfRfxCer[k].mean()).rolling(window=21).mean())
+            plt.plot((dfRfxCer[k] / dfRfxCer[k].mean()).rolling(window=63).mean())
             plt.axhline(1)
             plt.legend()
             plt.show()
 
 if __name__ == "__main__":
-    rofex_cer()
+    main()

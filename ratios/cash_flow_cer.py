@@ -65,12 +65,14 @@ def bonistas(bono):
 def main():
     flujos = {}
     datos_adicionales = []
-    for bono in ['DIP0', 'DICP', 'PAP0', 'PARP', 'CUAP']:
+    bonos_cer = ['DIP0', 'DICP', 'PAP0', 'PARP', 'CUAP']
+    bonos_sob = ['AL29D', 'AL30D', 'AL35D', 'AE38D', 'AL41D', 'GD46D']
+    for bono in bonos_sob:
 
 
         df, other_datos = bonistas(bono)
         datos_adicionales.append(other_datos)
-        print(df.tail())
+        print(df.head())
         # print(df['ticker'].iloc[0], 100*df['returns'][1:].mean(), df['TOTAL'][1:].sum()/df['TOTAL'].iloc[0])
 
         flujos[bono] = df
