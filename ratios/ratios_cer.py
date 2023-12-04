@@ -33,9 +33,7 @@ def main():
     dfCER = variables_bcra(tipo="cer", desde="2015-01-01")
     dfMayorista = variables_bcra(tipo="mayorista", desde="2015-01-01")
     dfCcl = dolar_ccl()
-    dfMep = dolar_mep()
-
-    print(dfMep.tail())
+    # dfMep = dolar_mep()
 
 
     dfLeliqCer = pd.merge(dfCER, dfLeliq, left_index=True, right_index=True)
@@ -44,11 +42,13 @@ def main():
     dfLeliqCer["rLeliqCCL"] = dfLeliqCer.leliq / dfLeliqCer.ccl
 
     plt.plot(dfLeliqCer.rLeliqCCL)
+    plt.axhline(y = dfLeliqCer.rLeliqCCL.mean(), color = 'r', linestyle = '-')
+    plt.title("leliqCCL")
     plt.show()
 
     dfMayCer = pd.merge(dfMayorista, dfCER, left_index=True, right_index=True)
     dfMayCer = pd.merge(dfMayCer, dfCcl, left_index=True, right_index=True)
-    dfMayCer = pd.merge(dfMayCer, dfMep, left_index=True, right_index=True)
+    # dfMayCer = pd.merge(dfMayCer, dfMep, left_index=True, right_index=True)
     dfMayCer['MerCcl'] = dfMayCer['M.BA'] / dfMayCer['ccl']
 
     dfMayCer['rMayCer'] = dfMayCer['mayorista'] / dfMayCer['cer']
@@ -67,7 +67,7 @@ def main():
     dfMayCer['rPAMPBACer'] = dfMayCer['PAMP.BA'] / dfMayCer['cer']
 
 
-    dfMayCer = dfMayCer.truncate(before="2019-12-30")
+    dfMayCer = dfMayCer.truncate(before="2019-08-30")
     print(dfMayCer.keys())
 
     figure, axis = plt.subplots(2, 1)
@@ -126,18 +126,18 @@ def main():
     axis[1].set_title("PAMP USA/CER")
     plt.show()
 
-    dfMepCcl = pd.merge(dfMep, dfCcl, left_index=True, right_index=True)
-    figure, axis = plt.subplots(2, 1)
-    axis[0].plot(dfMepCcl.mep)
-    axis[0].plot(dfMepCcl.ccl)
-    axis[0].legend(['MEP', 'CCL'])
+    # dfMepCcl = pd.merge(dfMep, dfCcl, left_index=True, right_index=True)
+    # figure, axis = plt.subplots(2, 1)
+    # axis[0].plot(dfMepCcl.mep)
+    # axis[0].plot(dfMepCcl.ccl)
+    # axis[0].legend(['MEP', 'CCL'])
 
-    axis[0].set_title(" CCL & MEP")
+    # axis[0].set_title(" CCL & MEP")
 
-    axis[1].plot(dfMepCcl.ccl/dfMepCcl.mep)
-    axis[1].axhline(y=(dfMepCcl.ccl/dfMepCcl.mep).mean(), color = 'y')
-    axis[1].set_title(" CCL / MEP")
-    plt.show()
+    # axis[1].plot(dfMepCcl.ccl/dfMepCcl.mep)
+    # axis[1].axhline(y=(dfMepCcl.ccl/dfMepCcl.mep).mean(), color = 'y')
+    # axis[1].set_title(" CCL / MEP")
+    # plt.show()
 
 def rofex_tickers(start="2015-01-01"):
     tickers = ["YPFD.BA", "GGAL.BA", "TX", "PAMP.BA", "ALUA.BA", "CEPU.BA", "TGSU2.BA", ]

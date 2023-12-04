@@ -18,9 +18,11 @@ def npv(x, df, price):
     return price - bond_price(x, df)
 
 
-keys = ['FECHA', 'SALDO', 'CUPÓN', 'AMORTIZACIÓN', 'TOTAL']
+keys_bonistas = ['FECHA', 'SALDO', 'CUPÓN', 'AMORTIZACIÓN', 'TOTAL']
 
-def transform_ba37d():
+def transform_ba37d_bonistas():
+
+    """ "Fecha de pago" ,Bono ,Ticker ,Renta ,Amortización ,R+A   ,Moneda """
     df = pd.read_csv('datos/flujoFondos_BA37D.csv')
     df = df[['Fecha de pago', 'Renta', 'Amortización', 'R+A']]
     df = df.rename({'Fecha de pago': 'FECHA', 'Renta': 'CUPÓN', 'Amortización': 'AMORTIZACIÓN', 'R+A': 'TOTAL'}, axis=1)
@@ -30,13 +32,13 @@ def transform_ba37d():
     total = df.TOTAL.sum()
     df['SALDO'] = 0
     df["FECHA"] = pd.to_datetime(df["FECHA"], format="%d/%m/%Y").dt.date
-    df = df[keys]
+    df = df[keys_bonistas]
     df['ticker'] = 'BA37D'
 
     return df
 
 def flujo_ba37d():
-    df = transform_ba37d()
+    df = transform_ba37d_bonistas()
     buy_date = datetime.now().date()
     df = df[df.FECHA > buy_date]
 
@@ -46,7 +48,7 @@ def flujo_ba37d():
     data = {'SALDO': 0, 'CUPÓN': -ult_precio, 'AMORTIZACIÓN': 0, 'TOTAL': -ult_precio, 'ticker': 'BA37D', 'FECHA': liq_date}
     df = pd.concat([pd.DataFrame.from_records([data]), df])
 
-    df = df[['ticker']+keys]
+    df = df[['ticker']+keys_bonistas]
     df['acumulado'] = df.TOTAL.cumsum()
     df['liq_date'] = liq_date
     df['yts'] = (df.FECHA-df.liq_date).astype('timedelta64[D]') / 360
@@ -72,6 +74,7 @@ def get_other_values(soup):
     return BonoArg(**values)
 
 def flujo_bono_soberano(year):
+    """ FECHA 	SALDO 	CUPÓN 	AMORTIZACIÓN 	TOTAL """
     ticker_for_query = f"AL{year}D" if year != 38 else f'AE{year}D'
     ticker_for_query = f"GD{year}D" if year == 46 else ticker_for_query
     url = f"https://bonistas.com/bonos-argentinos/{ticker_for_query}"
@@ -81,11 +84,11 @@ def flujo_bono_soberano(year):
     ult_precio = float(soup[0].iloc[1]['Valor'])
     buy_date =datetime.now().date()
     liq_date = buy_date+timedelta(days=2)
-    line = dict(zip(keys, [liq_date, 0, -ult_precio, 0, -ult_precio] ))
+    line = dict(zip(keys_bonistas, [liq_date, 0, -ult_precio, 0, -ult_precio] ))
     line_df = pd.DataFrame.from_records([line])
     df_flujo = pd.concat([line_df, df_flujo])
     df_flujo["ticker"] = ticker_for_query
-    df_flujo = df_flujo[['ticker']+ keys]
+    df_flujo = df_flujo[['ticker']+ keys_bonistas]
     df_flujo['acumulado'] = df_flujo['TOTAL'].cumsum()
 
 
@@ -173,6 +176,7 @@ def main():
     tirs = []
     years =[29, 30, 35, 38, 41, 46]
     df_flujo = flujo_ba37d()
+    print(df_flujo)
     datos = get_datos(df_flujo=df_flujo)
     tir = tir_calcs(df_flujo=df_flujo)
     tirs.append(tir)
@@ -192,9 +196,9 @@ def main():
 
     # print(flujos.head())
     reduction = pd.DataFrame.from_records(reduction)
-    reduction.to_excel('/home/lmpizarro/devel/project/financeExperiments/pyRofex/ratios/reduction.xlsx')
+    reduction.to_csv('/home/lmpizarro/devel/project/financeExperiments/pyRofex/ratios/reduction.csv')
     tirs = pd.DataFrame.from_records(tirs)
-    tirs.to_excel('/home/lmpizarro/devel/project/financeExperiments/pyRofex/ratios/tirs.xlsx')
+    tirs.to_csv('/home/lmpizarro/devel/project/financeExperiments/pyRofex/ratios/tirs.csv')
     tirs.set_index('TICKER', inplace=True)
 
     agg = flujos[['FECHA', 'TOTAL']].groupby('FECHA').agg('sum')
