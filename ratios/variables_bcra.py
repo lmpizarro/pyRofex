@@ -3,41 +3,88 @@ from datetime import datetime, timedelta
 import requests
 
 settings = {
-    "cer": {"Serie": "3540", "Detalle": "CER (Base 2.2.2002=1)"},
+    "cer": {"Serie": "3540", "Detalle": "CER (Base 2.2.2002=1)",
+            "Serie1": "0",
+            "Serie2": "0",
+            },
     "badlar": {
         "Serie": "7935",
         "Detalle": "BADLAR en pesos de bancos privados (en  e.a.)",
+        "Serie1": "0",
+            "Serie2": "0",
     },
     "TEAPolMon": {
         "Serie": "7936",
         "Detalle": "Tasa de Política Monetaria (en  e.a.)",
+        "Serie1": "0",
+            "Serie2": "0",
     },
     "mayorista": {
         "Serie": "272",
         "Detalle": "Tipo de Cambio Mayorista ($ por US$) Comunicación A 3500 - Referencia",
+        "Serie1": "0",
+            "Serie2": "0",
     },
     "minorista": {
         "Serie": "7927",
-        "Detalle": "Tipo de Cambio Minorista ($ por US$) Comunicación B 9791"
+        "Detalle": "Tipo de Cambio Minorista ($ por US$) Comunicación B 9791",
+        "Serie1": "0",
+            "Serie2": "0",
     },
     "TEAPF": {
         "Serie": "7939",
         "Detalle": "Tasa mínima para plazos fijos de personas humanas hasta $10 millones (en  e.a. para depósitos a 30 días)",
+        "Serie1": "0",
+            "Serie2": "0",
     },
-    "inflacion": {"Serie": "7931", "Detalle": "Inflación mensual (variación en )"},
+    "inflacion": {"Serie": "7931",
+                  "Detalle": "Inflación mensual (variación en )",
+                  "Serie1": "0",
+            "Serie2": "0",
+                  },
     "inflacionIA": {
         "Serie": "7932",
         "Detalle": "Inflación interanual (variación en i.a.)",
+        "Serie1": "0",
+            "Serie2": "0",
     },
     "reservas": {
         "Serie": "246",
         "Detalle": "Reservas Internacionales del BCRA (en millones de dólares - cifras provisorias sujetas a cambio de valuación)",
+        "Serie1": "0",
+            "Serie2": "0",
     },
     "uva": {"Serie": "7913",
-                  "Detalle":"Unidad de Valor Adquisitivo (UVA) (en pesos -con dos decimales-, base 31.3.2016=14.05)"},
+            "Detalle":"Unidad de Valor Adquisitivo (UVA) (en pesos -con dos decimales-, base 31.3.2016=14.05)",
+            "Serie1": "0",
+            "Serie2": "0",
+            },
     "leliq":{"Serie": "7926",
-             "Detalle": "LELIQ saldos (en millones de pesos)"}
+             "Detalle": "LELIQ saldos (en millones de pesos)",
+            "Serie1": "0",
+            "Serie2": "0",
+            },
+    "circMonetaria": {"Serie": "251",
+                      "Detalle": "Circulación monetaria (en millones de pesos)",
+                      "Serie1": "0",
+            "Serie2": "0",
+                    },
+    "depositoCtaCteBancos": {"Serie": "252",
+                       "Detalle": "Depósitos de los bancos en cta. cte. en pesos en el BCRA (en millones de pesos)",
+                       "Serie1": "0",
+            "Serie2": "0",
+                    },
 
+    "fisicoPub": {"Serie": "251",
+                  "Detalle": "Billetes y monedas en poder del público (en millones de pesos)",
+                  "Serie1": "296",
+            "Serie2": "0",
+                },
+    "depoEfecTotal": {"Serie": "444",
+                  "Detalle": "Depósitos en efectivo en las entidades financieras - Total (en millones de pesos)",
+                  "Serie1": "459",
+            "Serie2": "3540",
+                }
 }
 
 def variables_bcra(tipo="cer", desde="2016-04-01", hasta=None):
@@ -45,6 +92,11 @@ def variables_bcra(tipo="cer", desde="2016-04-01", hasta=None):
     variables = list(settings.keys())
     variables.remove("reservas")
     variables.remove("leliq")
+    variables.remove("circMonetaria")
+    variables.remove("depositoCtaCteBancos")
+    variables.remove("fisicoPub")
+    variables.remove("depoEfecTotal")
+
 
     url = "https://www.bcra.gob.ar/PublicacionesEstadisticas/Principales_variables_datos.asp"
 
@@ -56,10 +108,10 @@ def variables_bcra(tipo="cer", desde="2016-04-01", hasta=None):
         "fecha_desde": desde,
         "fecha_hasta": hasta,
         "serie": settings[tipo]["Serie"],
-        "series1": "0",
-        "series2": "0",
-        "series3": "0",
-        "series4": "0",
+        "serie1": settings[tipo]["Serie1"],
+        "serie2": settings[tipo]["Serie2"],
+        "serie3": "0",
+        "serie4": "0",
         "detalle": settings[tipo]["Detalle"],
     }
     resp = requests.post(url=url, data=data, headers={"User-Agent": "Mozilla/5.0"})
@@ -99,3 +151,37 @@ if __name__ == "__main__":
 
 
     print(df_minorista.iloc[-1].minorista/df_minorista.iloc[0].minorista)
+
+    print(df_minorista.tail())
+
+    df_cirMon = variables_bcra(tipo='circMonetaria', desde='2010-06-30')
+    dfMerge =  pd.merge(df_cirMon, df_minorista, left_index=True, right_index=True)
+
+    print(df_cirMon.tail())
+
+    df_depo = variables_bcra(tipo='depositoCtaCteBancos', desde='2010-06-30')
+    dfMerge =  pd.merge(df_depo, dfMerge, left_index=True, right_index=True)
+
+    print(df_depo.tail())
+
+    df_depo = variables_bcra(tipo='fisicoPub', desde='2010-06-30')
+    df_depoEfec = variables_bcra(tipo='depoEfecTotal', desde='2010-06-30')
+    dfMerge =  pd.merge(df_depoEfec, dfMerge, left_index=True, right_index=True)
+
+    print(df_depo.tail())
+    dfMerge['circUSD'] = dfMerge['circMonetaria'] / dfMerge['minorista']
+    dfMerge['depoCtaCteUSD'] = dfMerge['depositoCtaCteBancos'] / dfMerge['minorista']
+    dfMerge['depoEfectUSD'] = dfMerge['depoEfecTotal'] / dfMerge['minorista']
+    print(dfMerge.tail())
+
+    import matplotlib.pyplot as plt
+
+    plt.plot(dfMerge['circUSD'])
+    plt.show()
+
+    plt.plot(dfMerge['depoCtaCteUSD'])
+    plt.show()
+
+    plt.plot(dfMerge['depoEfectUSD'])
+    plt.show()
+
