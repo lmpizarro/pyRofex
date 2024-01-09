@@ -181,9 +181,9 @@ def info_flujos(bono):
     usdY = acumQT / maturity
     precio = - cf.iloc[0].cupon
     rentaYP = rentaY / precio
-    pQ = cf.iloc[1].cupon
+    pQ = cf.iloc[1].cupon / 100
     datos = zip(('ticker', 'precio','tir', 'duration', 'ytoBrk', 'maturity', 'flujoT', 'renta', 'renta/Y', 'usd/Y', 'renta/Y/P', 'pQ', 'pQ/P'),
-                (cf.ticker.iloc[0], precio, tir, duration, year_to_break, maturity, acumQT, renta, rentaY, usdY, rentaYP, pQ, pQ/precio))
+                (cf.ticker.iloc[0], precio, tir, duration, year_to_break, maturity, acumQT, renta, rentaY, usdY, rentaYP, pQ, 100*pQ/precio))
     dict_datos = {e[0]:e[1] for e in datos}
 
 
@@ -191,18 +191,21 @@ def info_flujos(bono):
 
 if __name__ == "__main__":
     dict_datos = []
-    for bono in ['AL29D', 'AL30D', 'AL35D', 'AE38D', 'BA37D', 'AL41D', 'GD46D',
-                 'GD30D', 'GD29D', 'GD41D', 'GD35D', 'GD38D']:
+    for bono in ['AL29D', 'AL30D', 'AL35D', 'AE38D', 'BA37D', 'AL41D', 'GD46D',]:
+                # 'GD30D', 'GD29D', 'GD41D', 'GD35D', 'GD38D']:
         datos = info_flujos(bono)
         dict_datos.append(datos)
 
 
     df = pd.DataFrame.from_records(dict_datos)
     df['PtomaxP'] = df['precio'] / df['precio'].max()
-    df['QtominQ'] = df['pQ/P'] / df['pQ'].mean()
+    df['pQ/P/meanPQ'] = df['pQ/P'] / df['pQ'].mean()
+    df['renta/Y/P'] = df['renta/Y'] / df['precio']
+    df['usd/Y/P'] = df['usd/Y'] / df['precio']
+    df['yBrkTDur'] = df['ytoBrk'] / df['maturity']
     df = df.set_index('ticker')
-    df = df.sort_values('QtominQ')
-    keys1 = ['precio', 'tir', 'duration', 'ytoBrk', 'maturity', 'flujoT']
-    keys2 = ['renta', 'renta/Y', 'usd/Y', 'renta/Y/P', 'pQ', 'pQ/P', 'PtomaxP', 'QtominQ']
+    df = df.sort_values('pQ/P/meanPQ')
+    keys1 = ['precio', 'tir', 'duration', 'ytoBrk', 'maturity', 'yBrkTDur', 'flujoT', 'usd/Y/P']
+    keys2 = ['renta', 'renta/Y', 'usd/Y', 'renta/Y/P', 'pQ', 'pQ/P', 'PtomaxP', 'pQ/P/meanPQ']
     print(df[keys1])
     print(df[keys2])
