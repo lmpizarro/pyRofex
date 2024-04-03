@@ -74,6 +74,13 @@ settings = {
                        "Serie1": "0",
             "Serie2": "0",
                     },
+    "pasesPasivos": {"Serie": "266",
+                       "Detalle": "Pases pasivos para el BCRA - Saldos (en millones de pesos)",
+                       "Serie1": "0",
+                       "Serie2": "0",
+                       "Serie3": "0",
+                       "Serie4": "0",
+                    },
 
     "fisicoPub": {"Serie": "251",
                   "Detalle": "Billetes y monedas en poder del público (en millones de pesos)",
@@ -96,6 +103,7 @@ def variables_bcra(tipo="cer", desde="2016-04-01", hasta=None):
     variables.remove("depositoCtaCteBancos")
     variables.remove("fisicoPub")
     variables.remove("depoEfecTotal")
+    variables.remove("pasesPasivos")
 
 
     url = "https://www.bcra.gob.ar/PublicacionesEstadisticas/Principales_variables_datos.asp"
@@ -152,7 +160,19 @@ if __name__ == "__main__":
 
     print(df_minorista.iloc[-1].minorista/df_minorista.iloc[0].minorista)
 
+    import matplotlib.pyplot as plt
     print(df_minorista.tail())
+    print(df_cer.tail())
+    dfCerMin =  pd.merge(df_cer, df_minorista, left_index=True, right_index=True)
+    dfCerMin['ratio'] = dfCerMin['minorista'] / dfCerMin['cer']
+    print(dfCerMin.tail())
+
+    mean = dfCerMin.ratio.mean()
+
+    plt.plot(dfCerMin['ratio']/mean - 1)
+    plt.axhline(y=0, color = 'r')
+    plt.title('ratio  USD minorista cer')
+    plt.show()
 
     df_cirMon = variables_bcra(tipo='circMonetaria', desde='2010-06-30')
     dfMerge =  pd.merge(df_cirMon, df_minorista, left_index=True, right_index=True)
@@ -174,14 +194,16 @@ if __name__ == "__main__":
     dfMerge['depoEfectUSD'] = dfMerge['depoEfecTotal'] / dfMerge['minorista']
     print(dfMerge.tail())
 
-    import matplotlib.pyplot as plt
 
     plt.plot(dfMerge['circUSD'])
+    plt.title('circulación monetaria en pesos expresada en USD minorista BCRA')
     plt.show()
 
     plt.plot(dfMerge['depoCtaCteUSD'])
+    plt.title('depostito en Cta Cte en pesos expresado en USD minorista BCRA')
     plt.show()
 
     plt.plot(dfMerge['depoEfectUSD'])
+    plt.title('depostito Efectivo en pesos expresado en USD minorista BCRA')
     plt.show()
 
