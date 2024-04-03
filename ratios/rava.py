@@ -199,6 +199,7 @@ def info_flujos(bono):
 import requests
 
 def getCotiHistorica(ticker):
+    path = f"datos/{ticker.upper()} - Cotizaciones historicas.csv"
     headers = {
         'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
         'Accept': '*/*',
@@ -216,7 +217,7 @@ def getCotiHistorica(ticker):
     }
 
     data = {
-        'access_token': '1e6761cbc84e79f5af9234b6abd0b35dd5fa6fda',
+        'access_token': '97619ba81e74e7405b8ad79825aec56431319b62',
         'especie': ticker,
         'fecha_inicio': '0000-00-00',
         'fecha_fin': '2024-02-03',
@@ -224,15 +225,20 @@ def getCotiHistorica(ticker):
 
     response = requests.post('https://clasico.rava.com/lib/restapi/v3/publico/cotizaciones/historicos', headers=headers, data=data)
     print(response)
-    return response.json()['body']
+    df = pd.DataFrame.from_records(response.json()['body'])
+    df.to_csv(path)
 
 if __name__ == "__main__":
 
-    body = getCotiHistorica('al30')
-    print(pd.DataFrame.from_records(body))
+    #for bono in ['AL29D', 'AL30D', 'AL35D', 'AE38D', 'BA37D', 'AL41D', 'GD46D','GD30D', 'GD38D', 'GD41D', 'GD29D', 'GD35D']:
+    for bono in ['AL29', 'AL30', 'AL35', 'AE38', 'AL41', 'GD46','GD30', 'GD38', 'GD41', 'GD29', 'GD35']:
+        getCotiHistorica(bono)
+
+
     exit()
     dict_datos = []
     for bono in ['AL29D', 'AL30D', 'AL35D', 'AE38D', 'BA37D', 'AL41D', 'GD46D','GD30D', 'GD38D', 'GD41D', 'GD29D', 'GD35D']:
+
         datos = info_flujos(bono)
         dict_datos.append(datos)
 
