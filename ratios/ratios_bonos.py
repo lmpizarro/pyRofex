@@ -126,6 +126,6 @@ def ratio_37_46():
     df[['close37', 'cierre46', 'ratio', 'ratiomean']].to_csv('ratios3746.csv')
 
 if __name__ == "__main__":
-    # main()
-    ratio_37_46()
+    main()
+    # ratio_37_46()
 

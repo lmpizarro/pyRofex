@@ -67,7 +67,7 @@ def main():
     datos_adicionales = []
     bonos_cer = ['DIP0', 'DICP', 'PAP0', 'PARP', 'CUAP']
     bonos_sob = ['AL29D', 'AL30D', 'AL35D', 'AE38D', 'AL41D', 'GD46D']
-    for bono in bonos_sob:
+    for bono in bonos_cer:
 
 
         df, other_datos = bonistas(bono)

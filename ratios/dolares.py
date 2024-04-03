@@ -2,7 +2,7 @@ from datetime import datetime
 import pandas as pd
 import yfinance as yf
 
-def dolar_mep(desde="2015-01-01", hasta=None):
+def dolar_mep(desde="2020-03-20", hasta=None):
 
     if not hasta:
         hasta = datetime.now().date().strftime("%Y-%m-%d")
@@ -10,6 +10,7 @@ def dolar_mep(desde="2015-01-01", hasta=None):
 
     # MEP ordenado de mayor a menor comienza 24 03 2020
     url = f"https://mercados.ambito.com/dolarrava/mep/historico-general/{desde}/{hasta}"
+
     df_dolar = pd.read_json(url)
     df_dolar = df_dolar.reindex(index=df_dolar.index[::-1]).reset_index()
     df_dolar = df_dolar.drop(columns=["index"])
@@ -18,8 +19,7 @@ def dolar_mep(desde="2015-01-01", hasta=None):
     df_dolar[[1]] = df_dolar[[1]].astype("float64")
 
 
-    df_dolar = df_dolar[:-1]
-
+    print(df_dolar.tail())
     df_dolar = df_dolar.rename(columns={0: "Fecha", 1: "mep"})
     df_dolar["Fecha"] = pd.to_datetime(df_dolar["Fecha"], format="%d/%m/%Y").dt.date
     df_dolar.set_index("Fecha", inplace=True)

@@ -1,4 +1,4 @@
-from rava import scrap_bonos_rava, coti_hist
+from rava import scrap_bonos_rava, coti_hist, change_index
 import pandas as pd
 import matplotlib.pyplot as plt
 
@@ -32,7 +32,7 @@ def ratio_bond_usd(year: str = 29):
 
 
 def ratios_bonos_dolar():
-    years ={29:None, 30:None, } # 35:None, 38:None, 41:None}
+    years ={29:None, 30:None,  35:None, 38:None, 41:None}
     for year in years:
         mrg = ratio_bond_usd(year)
         key_gd, key_al = getKeys(year)
@@ -52,3 +52,10 @@ def ratios_bonos_dolar():
 
 if __name__ == "__main__":
     ratios_bonos_dolar()
+    df = pd.read_csv("datos/AL30D - Cotizaciones historicas.csv")
+    max = df.cierre.max()
+    df = change_index(df)
+    df['rMax'] = (-1 + df.cierre/ max)
+
+    plt.plot(df.rMax)
+    plt.show()

@@ -38,7 +38,12 @@ def ultima_coti_bono_mep(bono='ba37d'):
     soup = BeautifulSoup(req.content, 'html.parser')
 
     table = soup.find("main").find("perfil-p")
-    return float(json.loads(table.attrs[':res'])['cuad_tecnico'][0]['ultimonum']) / dolar_mep_hoy()
+    mep = dolar_mep_hoy()
+    last = 0
+    try:
+        return float(json.loads(table.attrs[':res'])['cuad_tecnico'][0]['ultimonum']) / mep
+    except:
+        return last
 
 
 def coti_hist(res):
@@ -189,10 +194,45 @@ def info_flujos(bono):
 
     return dict_datos
 
+
+
+import requests
+
+def getCotiHistorica(ticker):
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64; rv:109.0) Gecko/20100101 Firefox/115.0',
+        'Accept': '*/*',
+        'Accept-Language': 'en-US,en;q=0.5',
+        # 'Accept-Encoding': 'gzip, deflate, br',
+        'Referer': 'https://www.rava.com/',
+        'Origin': 'https://www.rava.com',
+        'Connection': 'keep-alive',
+        'Sec-Fetch-Dest': 'empty',
+        'Sec-Fetch-Mode': 'no-cors',
+        'Sec-Fetch-Site': 'same-site',
+        'Content-Type': 'application/x-www-form-urlencoded',
+        'Pragma': 'no-cache',
+        'Cache-Control': 'no-cache',
+    }
+
+    data = {
+        'access_token': '1e6761cbc84e79f5af9234b6abd0b35dd5fa6fda',
+        'especie': ticker,
+        'fecha_inicio': '0000-00-00',
+        'fecha_fin': '2024-02-03',
+    }
+
+    response = requests.post('https://clasico.rava.com/lib/restapi/v3/publico/cotizaciones/historicos', headers=headers, data=data)
+    print(response)
+    return response.json()['body']
+
 if __name__ == "__main__":
+
+    body = getCotiHistorica('al30')
+    print(pd.DataFrame.from_records(body))
+    exit()
     dict_datos = []
-    for bono in ['AL29D', 'AL30D', 'AL35D', 'AE38D', 'BA37D', 'AL41D', 'GD46D',]:
-                # 'GD30D', 'GD29D', 'GD41D', 'GD35D', 'GD38D']:
+    for bono in ['AL29D', 'AL30D', 'AL35D', 'AE38D', 'BA37D', 'AL41D', 'GD46D','GD30D', 'GD38D', 'GD41D', 'GD29D', 'GD35D']:
         datos = info_flujos(bono)
         dict_datos.append(datos)
 
@@ -205,6 +245,8 @@ if __name__ == "__main__":
     df['yBrkTDur'] = df['ytoBrk'] / df['maturity']
     df = df.set_index('ticker')
     df = df.sort_values('pQ/P/meanPQ')
+    # df = df.sort_values('renta/Y/P')
+    # df = df.sort_values('usd/Y')
     keys1 = ['precio', 'tir', 'duration', 'ytoBrk', 'maturity', 'yBrkTDur', 'flujoT', 'usd/Y/P']
     keys2 = ['renta', 'renta/Y', 'usd/Y', 'renta/Y/P', 'pQ', 'pQ/P', 'PtomaxP', 'pQ/P/meanPQ']
     print(df[keys1])

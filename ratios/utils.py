@@ -65,7 +65,7 @@ def regressor(df_al_gd: pd.DataFrame, key='ratio'):
     regress = list(map(regress_func, x))
     return x, y, regress
 
-def genDates():
+def genDatesVolatility():
     import calendar
     import datetime
     from datetime import timedelta
@@ -74,10 +74,9 @@ def genDates():
     import pandas as pd
     import matplotlib.pyplot as plt
 
-    assets = {'SPY':{'colour': 'g-'}, 'AAPL':{'colour': 'ko-'}, 'TSLA':{'colour': 'rx-'}}
+    assets = {'SPY':{'colour': 'g-'}, 'AAPL':{'colour': 'ko-'}, 'TSLA':{'colour': 'rx-'}, 'DIA':{'colour': 'y-'}}
     colours = {'AAPL': 'rx-', 'TSLA': 'ko-', 'SPY': 'g-'}
 
-    print(calendar.monthrange(2023, 12))
     today = datetime.datetime.now().date()
     sixmonths = timedelta(days=180)
 
@@ -99,6 +98,5 @@ def genDates():
         assetdata = stds[stds.asset==asset].set_index('date')
         plt.plot(assetdata['std'], assets[asset]['colour'])
     plt.show()
-genDates()
 
 

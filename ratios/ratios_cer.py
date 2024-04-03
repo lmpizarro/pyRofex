@@ -1,6 +1,7 @@
 import pandas as pd
 import yfinance as yf
 import matplotlib.pyplot as plt
+import numpy as np
 
 from variables_bcra import variables_bcra
 from dolares import dolar_ccl, dolar_mep
@@ -31,7 +32,9 @@ def indice_merval(start="2015-01-01"):  # to be deleted
 def main():
     dfLeliq = variables_bcra(tipo="leliq", desde="2015-01-01")
     dfCER = variables_bcra(tipo="cer", desde="2015-01-01")
+    dfBadlar = variables_bcra(tipo="badlar", desde="2015-01-01")
     dfMayorista = variables_bcra(tipo="mayorista", desde="2015-01-01")
+    dfMinorista = variables_bcra(tipo="minorista", desde="2015-01-01")
     dfCcl = dolar_ccl()
     # dfMep = dolar_mep()
 
@@ -48,7 +51,7 @@ def main():
 
     dfMayCer = pd.merge(dfMayorista, dfCER, left_index=True, right_index=True)
     dfMayCer = pd.merge(dfMayCer, dfCcl, left_index=True, right_index=True)
-    # dfMayCer = pd.merge(dfMayCer, dfMep, left_index=True, right_index=True)
+    dfMayCer = pd.merge(dfMayCer, dfMinorista, left_index=True, right_index=True)
     dfMayCer['MerCcl'] = dfMayCer['M.BA'] / dfMayCer['ccl']
 
     dfMayCer['rMayCer'] = dfMayCer['mayorista'] / dfMayCer['cer']
@@ -59,15 +62,17 @@ def main():
 
     dfMayCer['rGGALCer'] = dfMayCer['GGAL'] / dfMayCer['cer']
     dfMayCer['rGGALBACer'] = dfMayCer['GGAL.BA'] / dfMayCer['cer']
+    dfMayCer['rGGALBAMin'] = dfMayCer['GGAL.BA'] / dfMayCer['minorista']
 
     dfMayCer['rYPFCer'] = dfMayCer['YPF'] / dfMayCer['cer']
     dfMayCer['rYPFBACer'] = dfMayCer['YPFD.BA'] / dfMayCer['cer']
+    dfMayCer['rYPFBAMin'] = dfMayCer['YPFD.BA'] / dfMayCer['minorista']
 
     dfMayCer['rPAMPCer'] = dfMayCer['PAM'] / dfMayCer['cer']
     dfMayCer['rPAMPBACer'] = dfMayCer['PAMP.BA'] / dfMayCer['cer']
 
 
-    dfMayCer = dfMayCer.truncate(before="2019-08-30")
+    dfMayCer = dfMayCer.truncate(before="2017-08-30")
     print(dfMayCer.keys())
 
     figure, axis = plt.subplots(2, 1)
@@ -100,8 +105,6 @@ def main():
     axis[1].plot(dfMayCer.rGGALBACer)
     axis[1].axhline(y=dfMayCer.rGGALBACer.mean(), color = 'g')
     axis[1].set_title("GGAL BA/CER")
-
-
     plt.show()
 
     figure, axis = plt.subplots(2, 1)
@@ -115,6 +118,7 @@ def main():
     axis[1].axhline(y=dfMayCer.rYPFBACer.mean(), color = 'y')
     axis[1].set_title("YPF BA/CER")
     plt.show()
+
 
     figure, axis = plt.subplots(2, 1)
     axis[0].plot(dfMayCer.rPAMPBACer)
@@ -138,6 +142,26 @@ def main():
     # axis[1].axhline(y=(dfMepCcl.ccl/dfMepCcl.mep).mean(), color = 'y')
     # axis[1].set_title(" CCL / MEP")
     # plt.show()
+
+    figure, axis = plt.subplots(2, 1)
+    axis[0].plot(dfMayCer.rGGALBAMin)
+    axis[0].axhline(y=dfMayCer.rGGALBAMin.mean(), color = 'y')
+    axis[0].set_title("GGAL BA/DMin")
+
+
+    axis[1].plot(dfMayCer.rYPFBAMin)
+    axis[1].axhline(y=dfMayCer.rYPFBAMin.mean(), color = 'y')
+    axis[1].set_title("YPF BA/DMin")
+    plt.show()
+
+    dfBadlar = pd.merge(dfCER, dfBadlar, left_index=True, right_index=True)
+    dfBadlar.badlar = np.power(1 + (dfBadlar.badlar / 100 ), 1/365)
+    dfBadlar.badlar = dfBadlar.badlar.cumprod()
+    dfBadlar['rBadlarCer'] = dfBadlar['badlar'] / dfBadlar['cer']
+    plt.plot(dfBadlar.badlar)
+    plt.title(" Badlar CER")
+    plt.show()
+
 
 def rofex_tickers(start="2015-01-01"):
     tickers = ["YPFD.BA", "GGAL.BA", "TX", "PAMP.BA", "ALUA.BA", "CEPU.BA", "TGSU2.BA", ]
