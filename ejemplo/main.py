@@ -65,11 +65,13 @@ def main():
 
         bid_ask = order_book_container.get(ticker=ticker).bid_ask()
         if bid_ask != (0, 0):
-            print(bid_ask)
+            print("BI-AS", bid_ask)
 
-    history = rfx_md.fetch_history(days=40)
+    history = rfx_md.fetch_history(days=10)
+
     for ticker in tickers:
         aggregate = rfx_md.hist_agg(history=history[ticker])
+        print(aggregate)
 
     my_order = CreateOrder.buy_stock_limit(
         symbol=local_config.rofex_ticker, units=100, price=bid_ask[0] + 10, date_time=now_time())

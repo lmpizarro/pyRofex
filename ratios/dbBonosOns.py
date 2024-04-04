@@ -330,7 +330,7 @@ ymcqo,13/12/2025,2.51,0.00,2.51
 ymcqo,13/02/2026,0.85,100.00,100.85
 """
 
-usdMep = 1028 # dolar_mep_hoy()
+usdMep = 991.25 # dolar_mep_hoy()
 
 import requests
 from bs4 import BeautifulSoup
@@ -350,11 +350,11 @@ def closePrice(bono='ba37d'):
         print(bono)
         return last
 
-prices = {'pmm29': 68000.0, 'ba37d': 43850.0, 'sa24d': 84900., 'bna26': 107360.0, 'ndt25': 93000.0,
-        'co26': 35000.0, 'al41': 45200.0, 'al30': 55360.0, 'BPOD7': 76670, 'bpy26': 80900,
-        'bpj25': 97800, 'bb37d': 39180.0, 'gd46': 49990.0, 'bc37d': 37920.0, 'tlc1o': 107620,
-        'ruc7o': 103000, 'mgcho': 103510, 'mtcgo': 112150, 'ymcjo': 95820, 'ymcio': 108940,
-        'yca6o': 108750, 'ymcho': 68450, 'ymcqo': 99700}
+prices = {'pmm29': 66980, 'ba37d': 43765.0, 'sa24d': 85000, 'bna26': 102730, 'ndt25': 90800,
+          'co26':  34995, 'al41':  43600.0, 'al30':  55510, 'BPOD7': 74200,  'bpy26': 79600,
+          'bpj25': 95000, 'bb37d': 40280.0, 'gd46': 49570.0, 'bc37d': 39000.0, 'tlc1o': 105500,
+          'ruc7o': 101550, 'mgcho': 106990, 'mtcgo': 0, 'ymcjo': 0, 'ymcio': 0,
+          'yca6o': 106500, 'ymcho': 66930, 'ymcqo': 97350}
 
 bonos = [
          {'ticker': 'pmm29', 'value': 68500.0/usdMep,  'tipo': 'bono', 'estado': 'MZA', 'per': 2},
@@ -382,7 +382,17 @@ bonos = [
          {'ticker': 'ymcqo', 'value': 100790.0/usdMep, 'tipo': 'on',   'estado': 'YPF',   'per': 2},
 ]
 
-print({b['ticker']:closePrice(b['ticker']) for b in bonos})
+bonos__ = [
+         {'ticker': 'ae38', 'value': 49.24,  'tipo': 'bono', 'estado': 'ARG', 'per': 2},
+         {'ticker': 'al35', 'value': 45.6,  'tipo': 'bono', 'estado': 'ARG', 'per': 2},
+         {'ticker': 'al41', 'value': 43.75,  'tipo': 'bono', 'estado': 'ARG', 'per': 2},
+         {'ticker': 'gd46', 'value': 49.45,  'tipo': 'bono', 'estado': 'ARG', 'per': 2},
+         {'ticker': 'al29', 'value': 56.6,  'tipo': 'bono', 'estado': 'ARG', 'per': 2},
+         {'ticker': 'ba37d', 'value': 43740/991.25,  'tipo': 'bono', 'estado': 'PBA', 'per': 2},
+]
+
+# print({b['ticker']:closePrice(b['ticker']) for b in bonos})
 
 for b in bonos:
     b['value'] = prices[b['ticker']] / usdMep
+

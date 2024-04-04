@@ -7,6 +7,9 @@ from dbBonosOns import flujos, bonos
 
 
 df = pd.read_csv(StringIO(flujos))
+# df = pd.read_csv("datos/bonoFlujo.txt")
+
+
 
 def getBono(bono='pmm29', value=100):
     dfBono = df[df['Bono']==bono].copy()
@@ -61,13 +64,13 @@ for bono in bonos:
                     'dPq': dPq,
                     'pQ': pQ,
                     'pctPq': 100*pctPq,
-                    'FNY': flujoTotal/maturity,
-                    'FNYV': 100*(flujoTotal/maturity)/value,
+                    # 'FNY': flujoTotal/maturity,
+                    # 'FNYV': 100*(flujoTotal/maturity)/value,
                     'pToAmort': value / dfBond['Amortización'].sum(),
                     # 'period': bono['per'],
                     'intCorr': intsCorr,
                     #'durMat': dfBond['dur'].sum() / maturity,
-                    # 'interY': 100*dfBond['Interés'].sum()/maturity/value,
+                    'interY': 100*dfBond['Interés'].sum()/maturity/value,
                     })
 reduxDf = pd.DataFrame.from_records(datos)
 pd.options.display.float_format = '{:,.2f}'.format

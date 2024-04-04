@@ -98,7 +98,7 @@ def mep_bono(year=29):
 
 def ratio_37_46():
     mep_al30 = mep_bono(30)['mep']
-    gd46d = change_index(CSVS.read_bono_gd(38))
+    gd46d = change_index(CSVS.read_bono_gd(29))
     ba37d = change_index(CSVS.read_bono_ba37d())
 
     df = pd.merge(mep_al30, ba37d, left_index=True, right_index=True)
@@ -109,11 +109,13 @@ def ratio_37_46():
     df['ratiomean'] = df.ratio.mean()
 
 
-    plt.plot(df.index, df.close37)
-    plt.plot(df.index, df.cierre46)
+    plt.plot(df.index, df.close37, 'r')
+    plt.plot(df.index, df.cierre46, 'k')
+    plt.title('cierre')
     plt.show()
-    plt.plot(df.index, 2 * (df.close37 - df.cierre46)/ (df.close37+df.cierre46))
 
+    plt.plot(df.index, 2 * (df.close37 - df.cierre46)/ (df.close37+df.cierre46))
+    plt.title('diff pct')
     plt.show()
 
 
@@ -121,11 +123,12 @@ def ratio_37_46():
     plt.plot(df.index, df.ratiomean-1)
     plt.plot(df.index, df.ratiomean-1 + (df.ratio-1).std())
     plt.plot(df.index, df.ratiomean-1 - (df.ratio-1).std())
+    plt.title('ratio')
     plt.show()
 
     df[['close37', 'cierre46', 'ratio', 'ratiomean']].to_csv('ratios3746.csv')
 
 if __name__ == "__main__":
-    main()
-    # ratio_37_46()
+    # main()
+    ratio_37_46()
 
