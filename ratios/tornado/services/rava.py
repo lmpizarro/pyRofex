@@ -8,9 +8,14 @@ urls = {
     "dolar" : 'https://www.rava.com/cotizaciones/dolares'
 }
 
-def precioEspecie(bono='ba37d'):
+class Asset:
+    def __init__(self, ticker=None, price=None) -> None:
+        self.ticker = ticker
+        self.price = price
+
+def precioEspecie(ticker='ba37d'):
     ''' devuelve la ultima cotizacion de un bono en pesos expresado en dolar'''
-    url = f'https://www.rava.com/perfil/{bono}'
+    url = f'https://www.rava.com/perfil/{ticker}'
     req = requests.get(url)
     soup = BeautifulSoup(req.content, 'html.parser')
 

@@ -9,5 +9,17 @@
         <br>
         <input type="submit" value="Submit">
     </form>
-    Ticker: {{ticker}} Price: {{price}}
+    {% if asset %}
+        <table>
+            <tr>
+                <th>Ticker</th>
+                <th>Price</th>
+            </tr>
+            <tr>
+                <td>{{asset.ticker}}</td>
+                <td>{{asset.price}}</td>
+            </tr>
+
+        </table>
+    {% end %}
     {% end %}

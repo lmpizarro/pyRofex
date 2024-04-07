@@ -1,5 +1,5 @@
 import tornado
-from services.rava import preciosRava
+from services.rava import preciosRava, Asset
 from settings import Config
 import numpy as np
 
@@ -15,12 +15,12 @@ class MainHandler(tornado.web.RequestHandler):
 class PriceFormHandler(tornado.web.RequestHandler):
     SUPPORTED_METHODS = ("GET", "POST")
     def get(self):
-        self.render(Config.getTemplatePath()+ "/precios.html", ticker=None, price=np.nan)
+        self.render(Config.getTemplatePath()+ "/precios.html", asset=None)
 
     def post(self):
         ticker = self.get_argument("ticker")
         precio = preciosRava(ticker)
-        self.render(Config.getTemplatePath()+ "/precios.html", ticker=ticker, price=precio)
+        self.render(Config.getTemplatePath()+ "/precios.html", asset=Asset(ticker, precio))
 
     def getRoute():
         return (r"/priceForm", PriceFormHandler)
