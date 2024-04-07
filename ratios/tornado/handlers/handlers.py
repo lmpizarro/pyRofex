@@ -15,12 +15,13 @@ class MainHandler(tornado.web.RequestHandler):
 class PriceFormHandler(tornado.web.RequestHandler):
     SUPPORTED_METHODS = ("GET", "POST")
     def get(self):
-        self.render(Config.getTemplatePath()+ "/precios.html", asset=None)
+        self.render(Config.getTemplatePath()+ "/precios.html", assets=None)
 
     def post(self):
-        ticker = self.get_argument("ticker")
-        precio = preciosRava(ticker)
-        self.render(Config.getTemplatePath()+ "/precios.html", asset=Asset(ticker, precio))
+        tickers = self.get_argument("ticker")
+        tickers = tickers.split(',')
+        assets = [Asset(ticker, preciosRava(ticker)) for ticker in tickers]
+        self.render(Config.getTemplatePath()+ "/precios.html", assets=assets)
 
     def getRoute():
         return (r"/priceForm", PriceFormHandler)

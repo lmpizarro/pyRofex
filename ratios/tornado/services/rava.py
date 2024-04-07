@@ -14,7 +14,7 @@ class Asset:
         self.price = price
 
 def precioEspecie(ticker='ba37d'):
-    ''' devuelve la ultima cotizacion de un bono en pesos expresado en dolar'''
+    ''' last price & properties '''
     url = f'https://www.rava.com/perfil/{ticker}'
     req = requests.get(url)
     soup = BeautifulSoup(req.content, 'html.parser')
@@ -22,9 +22,14 @@ def precioEspecie(ticker='ba37d'):
     table = soup.find("main").find("perfil-p")
     last = np.nan
     try:
-        return float(json.loads(table.attrs[':res'])['cuad_tecnico'][0]['ultimonum'])
+        especie = json.loads(table.attrs[':res'])['cuad_tecnico'][0]
+        varmensual = especie['varmensual']
+        varanual = especie['varanual']
+        last = float(especie['ultimonum'])
     except:
-        return last
+        pass
+
+    return last
 
 def precioMep():
     url = urls['dolar']

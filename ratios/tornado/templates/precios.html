@@ -9,16 +9,18 @@
         <br>
         <input type="submit" value="Submit">
     </form>
-    {% if asset %}
+    {% if assets %}
         <table>
             <tr>
                 <th>Ticker</th>
                 <th>Price</th>
             </tr>
-            <tr>
-                <td>{{asset.ticker}}</td>
-                <td>{{asset.price}}</td>
-            </tr>
+            {% for asset in assets %}
+                <tr>
+                    <td>{{asset.ticker}}</td>
+                    <td>{{asset.price}}</td>
+                </tr>
+            {% end %}
 
         </table>
     {% end %}

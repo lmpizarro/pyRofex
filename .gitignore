@@ -10,3 +10,4 @@ build/
 dist/
 src/pyRofex.egg-info/
 *.txt
+__pycache__

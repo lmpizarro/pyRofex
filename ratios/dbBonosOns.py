@@ -350,12 +350,11 @@ def closePrice(bono='ba37d'):
         print(bono)
         return last
 
-prices = {'pmm29': 66980, 'ba37d': 43765.0, 'sa24d': 85000, 'bna26': 102730, 'ndt25': 90800,
-          'co26':  34995, 'al41':  43600.0, 'al30':  55510, 'BPOD7': 74200,  'bpy26': 79600,
-          'bpj25': 95000, 'bb37d': 40280.0, 'gd46': 49570.0, 'bc37d': 39000.0, 'tlc1o': 105500,
-          'ruc7o': 101550, 'mgcho': 106990, 'mtcgo': 0, 'ymcjo': 0, 'ymcio': 0,
-          'yca6o': 106500, 'ymcho': 66930, 'ymcqo': 97350}
-
+prices = {'pmm29': 66700.0, 'ba37d': 44370.0, 'sa24d': 80500.0, 'bna26': 106440.0, 'ndt25':91000,
+          'co26': 35400.0, 'al41': 43595.0, 'al30': 55790.0, 'BPOD7': 74550, 'bpy26': 80700.0,
+          'bpj25': 95380.0, 'bb37d': 41000.0, 'gd46': 50780.0, 'bc37d': 39000.0, 'tlc1o': 104000,
+          'ruc7o': 103000, 'mgcho': 100000, 'mtcgo': 107500, 'ymcjo': 92190, 'ymcio': 106180,
+          'yca6o': 104700, 'ymcho': 66420.0, 'ymcqo': 97480}
 bonos = [
          {'ticker': 'pmm29', 'value': 68500.0/usdMep,  'tipo': 'bono', 'estado': 'MZA', 'per': 2},
          {'ticker': 'ba37d', 'value': 43900.0/usdMep,  'tipo': 'bono', 'estado': 'PBA', 'per': 2},
@@ -395,4 +394,3 @@ bonos__ = [
 
 for b in bonos:
     b['value'] = prices[b['ticker']] / usdMep
-
