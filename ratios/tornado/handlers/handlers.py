@@ -20,7 +20,7 @@ class PriceFormHandler(tornado.web.RequestHandler):
     def post(self):
         tickers = self.get_argument("ticker")
         tickers = tickers.split(',')
-        assets = [Asset(ticker, preciosRava(ticker)) for ticker in tickers]
+        assets = [Asset(ticker, preciosRava(ticker)) for ticker in tickers if len(ticker) > 0]
         self.render(Config.getTemplatePath()+ "/precios.html", assets=assets)
 
     def getRoute():
