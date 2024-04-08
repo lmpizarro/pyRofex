@@ -13,7 +13,7 @@ class Asset:
         self.ticker = ticker
         self.price = price
 
-def precioEspecie(ticker='ba37d'):
+async def precioEspecie(ticker='ba37d'):
     ''' last price & properties '''
     url = f'https://www.rava.com/perfil/{ticker}'
     req = requests.get(url)
@@ -31,7 +31,7 @@ def precioEspecie(ticker='ba37d'):
 
     return last
 
-def precioMep():
+async def precioMep():
     url = urls['dolar']
     req = requests.get(url)
     soup = BeautifulSoup(req.content, 'html.parser')
@@ -51,6 +51,6 @@ def precioMep():
     return mepEnPesos
 
 
-def preciosRava(ticker: str):
-    return precioMep() if ticker.upper() == 'MEP' else precioEspecie(ticker)
+async def preciosRava(ticker: str):
+    return await precioMep() if ticker.upper() == 'MEP' else await precioEspecie(ticker)
 

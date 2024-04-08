@@ -1,10 +1,10 @@
 {% extends "base.html" %}
 
     {% block body %}
-    <h2>Asset Price </h2>
+    <h2>Assets Prices </h2>
     <form action="/priceForm" method="post">
         {% module xsrf_form_html() %}
-        <label for="ticker">Ticker:</label>
+        <label for="ticker">Tickers:</label>
         <input type="text" id="ticker" name="ticker" required>
         <br>
         <input type="submit" value="Submit">

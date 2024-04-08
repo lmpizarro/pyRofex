@@ -1,7 +1,7 @@
 import tornado
 from services.rava import preciosRava, Asset
 from settings import Config
-import numpy as np
+import json
 
 class MainHandler(tornado.web.RequestHandler):
     SUPPORTED_METHODS = ("GET")
@@ -17,10 +17,10 @@ class PriceFormHandler(tornado.web.RequestHandler):
     def get(self):
         self.render(Config.getTemplatePath()+ "/precios.html", assets=None)
 
-    def post(self):
+    async def post(self):
         tickers = self.get_argument("ticker")
         tickers = tickers.split(',')
-        assets = [Asset(ticker, preciosRava(ticker)) for ticker in tickers if len(ticker) > 0]
+        assets = [Asset(ticker, await preciosRava(ticker)) for ticker in tickers if len(ticker) > 0]
         self.render(Config.getTemplatePath()+ "/precios.html", assets=assets)
 
     def getRoute():
@@ -29,11 +29,13 @@ class PriceFormHandler(tornado.web.RequestHandler):
 
 class PriceHandler(tornado.web.RequestHandler):
     SUPPORTED_METHODS = ("GET")
-    def get(self, ticker):
-        precio = preciosRava(ticker)
-        self.write(f"ticker {ticker} precio {precio}")
+    async def get(self, tickers):
+        tickers = [ticker for ticker in tickers.split(',') if len(ticker) >0]
+        assets = [{ticker: await preciosRava(ticker)} for ticker in tickers]
+
+        self.write(json.dumps(assets))
 
     @staticmethod
     def getRoute():
-        return (r"/price/([0-9a-zA-z]+)", PriceHandler)
+        return (r"/price/([0-9a-zA-z,]+)", PriceHandler)
 
