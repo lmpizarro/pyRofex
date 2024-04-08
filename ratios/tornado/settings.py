@@ -15,9 +15,11 @@ settings = {
 
 
 class Config:
+    templatePath = {'base': TEMPLATE_PATH,
+                    'ravaPrices': os.path.join(TEMPLATE_PATH, 'ravaPrices')}
     @staticmethod
-    def getTemplatePath():
-        return TEMPLATE_PATH
+    def getTemplatePath(app):
+        return Config.templatePath[app]
 
 
-print('[settings] TEMPLATE_PATH ', Config.getTemplatePath())
+print('[settings] TEMPLATE_PATH ', Config.getTemplatePath('base'))
