@@ -3,9 +3,9 @@ import tornado
 from handlers.handlers import (
     MainHandler,
     PriceFormHandler,
-    PriceHandler
+    PriceHandler,
+    Favicon
 )
-from handlers.favicon import Favicon
 
 from settings import settings
 
