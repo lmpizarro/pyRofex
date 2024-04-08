@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import json
 import numpy as np
+import tornado
 
 urls = {
     "perfilRava": "https://www.rava.com/perfil",
@@ -13,11 +14,21 @@ class Asset:
         self.ticker = ticker
         self.price = price
 
+class AsyncFetcher:
+
+    @staticmethod
+    async def fetch(url: str):
+        http_client = tornado.httpclient.AsyncHTTPClient()
+        response = await http_client.fetch(url)
+        return response
+
+
 async def precioEspecie(ticker='ba37d'):
     ''' last price & properties '''
     url = f'https://www.rava.com/perfil/{ticker}'
-    req = requests.get(url)
-    soup = BeautifulSoup(req.content, 'html.parser')
+
+    response = await AsyncFetcher.fetch(url)
+    soup = BeautifulSoup(response.body, 'html.parser')
 
     table = soup.find("main").find("perfil-p")
     last = np.nan
@@ -33,8 +44,8 @@ async def precioEspecie(ticker='ba37d'):
 
 async def precioMep():
     url = urls['dolar']
-    req = requests.get(url)
-    soup = BeautifulSoup(req.content, 'html.parser')
+    response = await AsyncFetcher.fetch(url)
+    soup = BeautifulSoup(response.body, 'html.parser')
     table = soup.find(name='dolares-p')
     body = json.loads(table.attrs[":datos"])["body"]
 
