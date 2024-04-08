@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Price Form</title>
+    <script src="https://unpkg.com/htmx.org@1.9.11/dist/htmx.min.js"></script>
+
+    <!--link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.23/dist/full.min.css" rel="stylesheet" type="text/css" /-->
+    <!--script src="https://cdn.tailwindcss.com"></script-->
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <div><img src="{{ static_url("images/kelvin.png") }}"/></div>
+    <link rel="shortcut icon" href="{{ static_url('favicon.ico') }}">
+</head>
+<body >
+    {% block body %}
+        <h2>{{message}}</h2>
+        <button hx-post="/"
+                hx-trigger="click"
+                hx-swap="outerHTML"
+                hx-vals={% module xsrf_form_html() %}
+
+                Click Me!
+        </button>
+    {% end %}
+</body>
+</html>
