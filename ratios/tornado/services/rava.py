@@ -28,9 +28,11 @@ async def precioEspecie(ticker='ba37d'):
     url = f'https://www.rava.com/perfil/{ticker}'
 
     response = await AsyncFetcher.fetch(url)
+
     soup = BeautifulSoup(response.body, 'html.parser')
 
     table = soup.find("main").find("perfil-p")
+
     last = np.nan
     try:
         especie = json.loads(table.attrs[':res'])['cuad_tecnico'][0]
@@ -65,3 +67,5 @@ async def precioMep():
 async def preciosRava(ticker: str):
     return await precioMep() if ticker.upper() == 'MEP' else await precioEspecie(ticker)
 
+async def priceRavaList(tickers):
+    return  [{'ticker': ticker, 'price': await preciosRava(ticker)}  for ticker in tickers]
