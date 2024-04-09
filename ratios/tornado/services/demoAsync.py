@@ -4,14 +4,11 @@ import asyncio
 import time
 from datetime import timedelta
 
-from html.parser import HTMLParser
-from urllib.parse import urljoin, urldefrag
 
 from tornado import gen, httpclient, queues
 
 from rava import urls as urls_base
 
-base_url = "http://www.tornadoweb.org/en/stable/"
 concurrency = 10
 
 
@@ -26,7 +23,6 @@ def getUrl(ticker):
 
 async def main():
     q = queues.Queue()
-    start = time.time()
     fetching, fetched, dead = set(), set(), set()
 
     tickers = ['pep','pg', 'al30', 'al30d']
@@ -54,6 +50,8 @@ async def main():
                 q.task_done()
 
     # Start workers, then wait for the work queue to be empty.
+
+    start = time.time()
     workers = gen.multi([worker() for _ in range(concurrency)])
     await q.join(timeout=timedelta(seconds=300))
     assert fetching == (fetched | dead)
