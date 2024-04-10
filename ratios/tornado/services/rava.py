@@ -4,10 +4,15 @@ import json
 import numpy as np
 import tornado
 
-urls = {
+urlsBase = {
     "perfilRava": "https://www.rava.com/perfil",
     "dolar" : 'https://www.rava.com/cotizaciones/dolares'
 }
+
+def getUrlRavaPerfil(ticker):
+    return  urlsBase['perfilRava']+'/'+ticker
+
+
 
 class Asset:
     def __init__(self, ticker=None, price=None) -> None:
@@ -53,7 +58,7 @@ def decodeResponse(cuadroTecnico):
     return ultimoPrecio
 
 async def precioMep():
-    url = urls['dolar']
+    url = urlsBase['dolar']
     response = await getResponse(url=url)
     soup = BeautifulSoup(response.body, 'html.parser')
     table = soup.find(name='dolares-p')

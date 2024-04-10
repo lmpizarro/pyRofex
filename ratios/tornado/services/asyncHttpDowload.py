@@ -1,17 +1,9 @@
 #!/usr/bin/env python3
-
-import asyncio
 import time
 from datetime import timedelta
 from tornado import gen, httpclient, queues
 
-from rava import urls as urls_base, getCuadroTecnico
-
 concurrency = 10
-
-
-def getUrlRavaPerfil(ticker):
-    return  urls_base['perfilRava']+'/'+ticker
 
 async def asyncFetcher(urls):
 
@@ -59,16 +51,3 @@ async def asyncFetcher(urls):
 
     return responses
 
-async def main():
-
-    tickers = ['pep','pg', 'al30', 'al30d']
-    urls = [getUrlRavaPerfil(ticker) for ticker in tickers]
-    responses = await asyncFetcher(urls)
-
-    for response in responses:
-        print(response['url'].split('/')[-1], getCuadroTecnico(response['response']))
-
-
-if __name__ == "__main__":
-
-    asyncio.run(main())
