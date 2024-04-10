@@ -14,52 +14,62 @@ class Asset:
         self.ticker = ticker
         self.price = price
 
-class AsyncFetcher:
 
-    @staticmethod
-    async def fetch(url: str):
-        http_client = tornado.httpclient.AsyncHTTPClient()
-        response = await http_client.fetch(url)
-        return response
+async def getResponse(url):
+    ''' last price & properties '''
 
+    response = await tornado.httpclient.AsyncHTTPClient().fetch(url)
+
+    return response
 
 async def precioEspecie(ticker='ba37d'):
-    ''' last price & properties '''
+
     url = f'https://www.rava.com/perfil/{ticker}'
+    response = await getResponse(url=url)
+    cuadTec  = getCuadroTecnico(response=response)
+    return decodeResponse(cuadTec)
 
-    response = await AsyncFetcher.fetch(url)
-
+def getCuadroTecnico(response):
     soup = BeautifulSoup(response.body, 'html.parser')
 
-    table = soup.find("main").find("perfil-p")
-
-    last = np.nan
     try:
-        especie = json.loads(table.attrs[':res'])['cuad_tecnico'][0]
-        varmensual = especie['varmensual']
-        varanual = especie['varanual']
-        last = float(especie['ultimonum'])
+        table = soup.find("main").find("perfil-p")
+        return  json.loads(table.attrs[':res'])['cuad_tecnico'][0]
     except:
         pass
 
-    return last
+
+def decodeResponse(cuadroTecnico):
+
+    ultimoPrecio = np.nan
+    try:
+        varmensual = cuadroTecnico['varmensual']
+        varanual = cuadroTecnico['varanual']
+        especie = cuadroTecnico['especie']
+        ultimoPrecio = float(cuadroTecnico['ultimonum'])
+    except:
+        pass
+
+    return ultimoPrecio
 
 async def precioMep():
     url = urls['dolar']
-    response = await AsyncFetcher.fetch(url)
+    response = await getResponse(url=url)
     soup = BeautifulSoup(response.body, 'html.parser')
     table = soup.find(name='dolares-p')
-    body = json.loads(table.attrs[":datos"])["body"]
+    datos = json.loads(table.attrs[":datos"])
+    datosdolares = datos["body"]
 
-    dolares = []
+    dolaresMep = []
     mepEnPesos = np.nan
-    try:
-        for e in body:
-            if 'DOLAR MEP' in e['especie']:
-                dolares.append(float(e['ultimo']))
-        mepEnPesos = sum(dolares) / len(dolares)
-    except Exception as err:
-        pass
+
+    for dolar in datosdolares:
+        try:
+            if 'DOLAR MEP' in dolar['especie']:
+                dolaresMep.append(float(dolar['ultimo']))
+        except Exception as err:
+            continue
+    mepEnPesos = sum(dolaresMep) / len(dolaresMep)
 
     return mepEnPesos
 
