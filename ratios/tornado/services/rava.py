@@ -72,10 +72,14 @@ async def precioMep():
 async def preciosRava(ticker: str):
     return await precioMep() if ticker.upper() == 'MEP' else await precioEspecie(ticker)
 
+async def getCuadrosTecnicos(tickers):
+    urls = [getUrlRavaPerfil(ticker=ticker) for ticker in tickers if ticker.upper() != 'MEP']
+    responses = await asyncFetcher(urls=urls)
+    return [getCuadroTecnico(response['response']) for response in responses]
+
+
 async def priceRavaList(tickers, concurrent=True):
     if not concurrent:
         return  [{'ticker': ticker, 'price': await preciosRava(ticker)}  for ticker in tickers]
-    urls = [getUrlRavaPerfil(ticker=ticker) for ticker in tickers if ticker.upper() != 'MEP']
-    responses = await asyncFetcher(urls=urls)
-    cuadroTecnicos = [getCuadroTecnico(response['response']) for response in responses]
-    return [{'especie': cuadTec['especie'], 'precio':lastPrice(cuadroTecnico=cuadTec)} for cuadTec in cuadroTecnicos]
+    cuadrosTecnicos = await getCuadrosTecnicos(tickers)
+    return [{'ticker': cuadTec['especie'], 'price':lastPrice(cuadroTecnico=cuadTec)} for cuadTec in cuadrosTecnicos]
