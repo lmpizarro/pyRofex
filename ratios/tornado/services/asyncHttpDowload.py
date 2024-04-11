@@ -3,6 +3,7 @@ import time
 from datetime import timedelta
 from tornado import gen, httpclient, queues
 
+
 concurrency = 10
 
 async def asyncFetcher(urls):

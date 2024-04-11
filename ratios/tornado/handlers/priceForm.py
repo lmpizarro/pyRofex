@@ -1,5 +1,6 @@
 import tornado
-from services.rava import preciosRava, Asset
+from services.rava import preciosRava
+from models.asset import Asset
 from settings import Config
 
 class PriceFormHandler(tornado.web.RequestHandler):

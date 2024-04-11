@@ -1,8 +1,8 @@
-import requests
 from bs4 import BeautifulSoup
 import json
 import numpy as np
 import tornado
+from services.asyncHttpDowload import asyncFetcher
 
 urlsBase = {
     "perfilRava": "https://www.rava.com/perfil",
@@ -11,13 +11,6 @@ urlsBase = {
 
 def getUrlRavaPerfil(ticker):
     return  urlsBase['perfilRava']+'/'+ticker
-
-
-
-class Asset:
-    def __init__(self, ticker=None, price=None) -> None:
-        self.ticker = ticker
-        self.price = price
 
 
 async def getResponse(url):
@@ -32,19 +25,16 @@ async def precioEspecie(ticker='ba37d'):
     url = f'https://www.rava.com/perfil/{ticker}'
     response = await getResponse(url=url)
     cuadTec  = getCuadroTecnico(response=response)
-    return decodeResponse(cuadTec)
+    return lastPrice(cuadTec)
 
 def getCuadroTecnico(response):
     soup = BeautifulSoup(response.body, 'html.parser')
 
-    try:
-        table = soup.find("main").find("perfil-p")
-        return  json.loads(table.attrs[':res'])['cuad_tecnico'][0]
-    except:
-        pass
+    table = soup.find("main").find("perfil-p")
+    return  json.loads(table.attrs[':res'])['cuad_tecnico'][0]
 
 
-def decodeResponse(cuadroTecnico):
+def lastPrice(cuadroTecnico):
 
     ultimoPrecio = np.nan
     try:
@@ -82,5 +72,10 @@ async def precioMep():
 async def preciosRava(ticker: str):
     return await precioMep() if ticker.upper() == 'MEP' else await precioEspecie(ticker)
 
-async def priceRavaList(tickers):
-    return  [{'ticker': ticker, 'price': await preciosRava(ticker)}  for ticker in tickers]
+async def priceRavaList(tickers, concurrent=True):
+    if not concurrent:
+        return  [{'ticker': ticker, 'price': await preciosRava(ticker)}  for ticker in tickers]
+    urls = [getUrlRavaPerfil(ticker=ticker) for ticker in tickers if ticker.upper() != 'MEP']
+    responses = await asyncFetcher(urls=urls)
+    cuadroTecnicos = [getCuadroTecnico(response['response']) for response in responses]
+    return [{'especie': cuadTec['especie'], 'precio':lastPrice(cuadroTecnico=cuadTec)} for cuadTec in cuadroTecnicos]

@@ -1,6 +1,5 @@
 import asyncio
-from demoAsync import asyncFetcher
-from rava import getCuadroTecnico
+from asyncHttpDowload import asyncFetcher
 
 async def main():
 
@@ -9,7 +8,7 @@ async def main():
     responses = await asyncFetcher(urls)
 
     for response in responses:
-        print(getCuadroTecnico(response['response']))
+        print(response)
 
 
 if __name__ == "__main__":
