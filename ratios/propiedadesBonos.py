@@ -6,8 +6,8 @@ from pyxirr import xirr
 from dbBonosOns import flujos, bonos
 
 
-df = pd.read_csv(StringIO(flujos))
-# df = pd.read_csv("datos/bonoFlujo.txt")
+# df = pd.read_csv(StringIO(flujos))
+df = pd.read_csv("datos/bonoFlujo.txt")
 
 
 
